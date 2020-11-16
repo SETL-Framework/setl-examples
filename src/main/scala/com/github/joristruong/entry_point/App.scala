@@ -71,6 +71,6 @@ object App {
      * Exercise time
      * Try to build your own `Setl` object!
      */
-    val mySetl: Setl = ???
+    //val mySetl: Setl = ???
   }
 }
