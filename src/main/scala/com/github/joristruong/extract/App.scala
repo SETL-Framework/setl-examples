@@ -3,8 +3,6 @@ package com.github.joristruong.extract
 import com.github.joristruong.utils.TestObject
 import com.jcdecaux.setl.Setl
 import com.jcdecaux.setl.storage.connector.Connector
-import dev.qinx.faker.Faker
-import org.apache.spark.sql.SparkSession
 
 /**
  * Learn about Extract processes with SETL
