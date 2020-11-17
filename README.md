@@ -1,6 +1,6 @@
 # SETL exercises
 
-Exercises to get familiar to the wonderful SETL framework!
+Exercises to get familiar with the wonderful [SETL](https://github.com/SETL-Developers/setl) framework!
 
 # Chapters
 
