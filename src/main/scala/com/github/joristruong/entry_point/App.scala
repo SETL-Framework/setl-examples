@@ -14,6 +14,7 @@ object App {
      * Additionally, the `withDefaultConfigLoader()` method is used. This means that `Setl` will read the default ConfigLoader located in `resources/application.conf`, where `setl.environment` must be set.
      * The ConfigLoader will then read the corresponding configuration file <app_env>.conf in the `resources` folder, where <app_env> is the value set for `setl.environment`.
      */
+    println("Logs for: setl0")
     val setl0: Setl = Setl.builder()
       .withDefaultConfigLoader()
       .getOrCreate()
@@ -29,6 +30,7 @@ object App {
     /**
      * You can also specify the configuration file that the `ConfigLoader` should read.
      */
+    println("Logs for: setl1")
     val setl1: Setl = Setl.builder()
       .withDefaultConfigLoader("own_config_file.conf")
       .getOrCreate()
@@ -36,10 +38,12 @@ object App {
     /**
      * Or even set your own ConfigLoader.
      */
+    println("Logs for: setl2")
     val configLoader: ConfigLoader = ConfigLoader.builder()
-      .setAppEnv("own_env.conf")
+      .setAppEnv("local")
       .setAppName("Setl2_AppName")
-      .setProperty("spark.master", "local[*]")
+      .setProperty("setl.config.spark.master", "local[*]")
+      .setProperty("setl.config.spark.custom-key", "custom-value")
       .getOrCreate()
     val setl2: Setl = Setl.builder()
       .setConfigLoader(configLoader)
@@ -48,6 +52,7 @@ object App {
     /**
      * Some methods to quickly set your conf
      */
+    println("Logs for: setl3")
     val setl3: Setl = Setl.builder()
       .withDefaultConfigLoader()
       .setSparkMaster("local[*]") // set your master URL
@@ -57,6 +62,7 @@ object App {
     /**
      * Set the `SetlConfigPath`, where your conf options have to be found under it
      */
+    println("Logs for: setl4")
     val setl4: Setl = Setl.builder()
       .withDefaultConfigLoader("own_config_file.conf")
       .setSetlConfigPath("myApp")
@@ -71,6 +77,7 @@ object App {
      * Exercise time
      * Try to build your own `Setl` object!
      */
+    //println("Logs for: mySetl")
     //val mySetl: Setl = ???
   }
 }
