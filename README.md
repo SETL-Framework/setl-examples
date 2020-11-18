@@ -237,9 +237,59 @@ In summary, to register a `SparkRepository`, you need to:
 
 ### 2.3 Registration of multiple data sources
 
+Most of the time, you will need to register multiple data sources.
+
 #### 2.3.1 Multiple `Connector`
 
+Let's start with `Connector`. Note that it is perfectly possible to register multiple `Connector`. However, and we will go through that later on, during the ingestion, there will be an issue if there are multiple `Connector`. `Setl` has no way to differentiate one `Connector` from another. You will need to set what is called a `deliveryId`.
+
+```
+val setl1: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+ 
+// /!\ This will work for data registration here but not for data ingestion later /!\
+setl1
+    .setConnector("testObjectRepository")
+    .setConnector("pokeGradesRepository")
+ 
+// Please get used to set a `deliveryId` when you register multiple `Connector`
+setl1
+    .setConnector("testObjectRepository", deliveryId = "testObject")
+    .setConnector("pokeGradesRepository", deliveryId = "grades")
+```
+
 #### 2.3.2 Multiple `SparkRepository`
+
+Let's now look at how we can register multiple `SparRepository`. If the `SparkRepository` you register all have different type, there will be no issue during the ingestion. Indeed, `Setl` is capable of differentiating the upcoming data by inferring the object type.
+
+```
+val setl2: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl2
+    .setSparkRepository[TestObject]("testObjectRepository")
+    .setSparkRepository[Grade]("pokeGradesRepository")
+```
+
+However, if there are multiple `SparkRepository` with the same type, you **must** use a `deliveryId` for each of them. Otherwise, there will be an error during the data ingestion. This is the same reasoning as multiple `Connector`: there is no way to differentiate two `SparkRepository` of the same type.
+
+```
+val setl3: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+// /!\ This will work for data registration here but not for data ingestion later /!\
+setl3
+    .setSparkRepository[Grade]("pokeGradesRepository")
+    .setSparkRepository[Grade]("digiGradesRepository")
+
+// Please get used to set a `deliveryId` when you register multiple `SparkRepository` of same type
+setl3
+    .setSparkRepository[Grade]("pokeGradesRepository", deliveryId = "pokeGrades")
+    .setSparkRepository[Grade]("digiGradesRepository", deliveryId = "digiGrades")
+```
 
 ### 2.4 Data Ingestion
 
