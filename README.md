@@ -1,4 +1,4 @@
-# SETL exercises
+# SETL examples
 
 Lessons and exercises to get familiar with the wonderful [SETL](https://github.com/SETL-Developers/setl) framework!
 
@@ -110,7 +110,144 @@ Nothing too crazy: try to build your own `Setl` object! Run your code and examin
 
 <details> <summary>Lesson</summary>
 
+SETL supports two types of data accessors: Connector and SparkRepository.
+* A Connector is a non-typed abstraction of data access layer (DAL). For simplicity, you can understand it to as a Spark DataFrame.
+* A SparkRepository is a typed abstraction data access layer (DAL). For simplicity, you can understand it as a Spark Dataset.
+For more information, please refer to the [official documentation](https://setl-developers.github.io/setl/).
 
+`SETL` supports multiple data format, such as CSV, JSON, Parquet, Excel, Cassandra, DynamoDB, JDBC or Delta.
+
+To ingest data in the `Setl` object entry point, you first must register the data, using the `setConnector()` or the `setSparkRepository[T]` methods.
+
+### 2.1 Registration with `Connector`
+
+```
+val setl: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl
+    .setConnector("testObjectRepository")
+```
+
+The argument provided is a `String` that refers to an item in the specified configuration file.
+
+`local.conf`:
+```
+setl.config.spark {
+  some.config.option = "some-value"
+}
+
+testObjectRepository {
+  storage = "CSV"
+  path = "src/main/resources/test_objects.csv"
+  inferSchema = "true"
+  delimiter = ","
+  header = "true"
+  saveMode = "Overwrite"
+}
+```
+
+As you can see, `testObjectRepository` defines a configuration for data of type `CSV`. This data is in a file, located in `src/main/resources/test_objects.csv`. Other classic read or write options are configured.
+
+In summary, to register a `Connector`, you need to:
+1. Specify an item in your configuration file. This item must have a `storage` key, which represents the type of the data. Other keys might be mandatory depending on this type.
+2. Register the data in your `Setl` object, using `setConnector(<item>)`.
+
+### 2.2 Registration with `SparkRepository`
+
+```
+val setl: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl
+    .setSparkRepository[TestObject]("testObjectRepository")
+```
+
+Like `setConnector()`, the argument provided is a `String` that refers to an item in the specified configuration file.
+
+`local.conf`:
+```
+setl.config.spark {
+  some.config.option = "some-value"
+}
+
+testObjectRepository {
+  storage = "CSV"
+  path = "src/main/resources/test_objects.csv"
+  inferSchema = "true"
+  delimiter = ","
+  header = "true"
+  saveMode = "Overwrite"
+}
+```
+
+Notice that the above `SparkRepository` is set with the `TestObject` type. In this example, the data we want to register is a CSV file containing two columns: `value1` of type `String` and `value2` of type `Int`. That is why the `TestObject` class should be:
+```
+case class TestObject(value1: String,
+                      value2: Int)
+```
+
+In summary, to register a `SparkRepository`, you need to:
+1. Specify an item in your configuration file. This item must have a `storage` key, which represents the type of the data. Other keys might be mandatory depending on this type.
+2. Create a class or a case class representing the object type of your data.
+3. Register the data in your `Setl` object, using `setSparkRepository[T](<item>)`.
+
+<details> <summary>Advanced</summary>
+    
+1. `Connector` or `SparkRepository`?
+
+    Sometimes, the data your are ingesting contain irrelevant information that you do not want to keep. For example, let's say that the CSV file you want to ingest contain 10 columns: `value1`, `value2`, `value3` and 7 other columns you are not interested in.
+    
+    It is possible to ingest these 3 columns only with a `SparkRepository` if you specify the correct object type of your data:
+    ```
+    case class A(value1: T1,
+                 value2: T2,
+                 value3: T3)
+    
+    setl
+        .setSparkRepository[A]("itemInConfFile")
+    ```
+
+    This is not possible with a `Connector`. If you register this CSV file with a `Connector`, all 10 columns will appear.
+
+2. Annotations
+
+* `@ColumnName`
+
+    `@ColumnName` is an annotation used in a case class. When you want to rename some columns in your code for integrity but also keep the original name when writing the data, you can use this annotation.
+    
+    ```
+    case class A(@ColumnName("value_one") valueOne: T1,
+                 @ColumnName("value_two") valueTwo: T2)
+    ```
+  
+  As you probably know, Scala does not use `snake_case` but `camelCase`. If you register a `SparkRepository` of type `[A]` in your `Setl` object, and if you read it, the columns will be named as `valueOne` and `valueTwo`. The file you read will still keep their name, i.e `value_one` and `value_two`.
+
+* `@CompoundKey`
+
+    TODO
+
+* `@Compress`
+
+    TODO
+
+</details>
+
+### 2.3 Registration of multiple data sources
+
+#### 2.3.1 Multiple `Connector`
+
+#### 2.3.2 Multiple `SparkRepository`
+
+### 2.4 Data Ingestion
+
+
+
+### 2.5 Data format configuration cheat sheet
+
+Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_access_layer/configuration_example).
 
 </details>
 
@@ -135,6 +272,20 @@ Nothing too crazy: try to build your own `Setl` object! Run your code and examin
 </details>
 
 ## 4. Load
+
+<details> <summary>Lesson</summary>
+
+
+
+</details>
+
+<details> <summary>Exercises</summary>
+
+
+
+</details>
+
+## 5. From local to production environment
 
 <details> <summary>Lesson</summary>
 

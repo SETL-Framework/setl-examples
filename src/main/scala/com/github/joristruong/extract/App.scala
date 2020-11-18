@@ -21,7 +21,7 @@ object App {
 
     /**
      * Using `setConnector()` and `setSparkRepository[T]()` make SETL ingest the corresponding data.
-     * The argument provided below is a string that must be found at the configuration file.
+     * The provided argument is a string that must be found at the configuration file.
      * Multiple storage types are supported in SETL. We will go through each of them later on.
      * Make sure you understand the data object `testObjectRepository` that we defined in the configuration file.
      * For CSV files, SETL is using Apache Spark API. The options you see in the object (except for `storage` of course) correspond to the options used when reading a CSV file with Apache Spark.
