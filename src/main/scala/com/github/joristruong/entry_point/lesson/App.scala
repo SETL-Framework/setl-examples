@@ -1,4 +1,4 @@
-package com.github.joristruong.entry_point
+package com.github.joristruong.entry_point.lesson
 
 import com.jcdecaux.setl.Setl
 import com.jcdecaux.setl.config.ConfigLoader
@@ -72,12 +72,5 @@ object App {
      * You can also set your own `SparkSession`. Please refer to the documentation, or the source code.
      * The simplest entry point and the most common should be setl0. Try to be familiar with it!
      */
-
-    /**
-     * Exercise time
-     * Try to build your own `Setl` object!
-     */
-    //println("Logs for: mySetl")
-    //val mySetl: Setl = ???
   }
 }

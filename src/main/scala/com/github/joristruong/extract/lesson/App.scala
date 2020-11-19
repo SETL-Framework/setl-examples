@@ -1,6 +1,6 @@
-package com.github.joristruong.extract
+package com.github.joristruong.extract.lesson
 
-import com.github.joristruong.extract.factory.{AutoLoadIngestionFactory, IngestionFactory}
+import com.github.joristruong.extract.lesson.factory.{AutoLoadIngestionFactory, IngestionFactory}
 import com.github.joristruong.utils.{Grade, TestObject}
 import com.jcdecaux.setl.Setl
 import com.jcdecaux.setl.storage.connector.Connector
