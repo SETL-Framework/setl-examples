@@ -6,9 +6,11 @@ Lessons and exercises to get familiar with the wonderful [SETL](https://github.c
 
 ## 1. Entry Point and configurations
 
-<details> <summary>Lesson</summary>
+<details> <summary><strong>Lesson</strong></summary>
 
 <h3>1.1. Entry point with basic configurations</h3>
+
+<details> <summary></summary>
 
 The entry point is the first thing you need to learn to code with SETL. It is the starting point to run your ETL project.
 
@@ -34,7 +36,11 @@ This is the minimum code needed to create a `Setl` object. It is the entry point
 
 The configuration file is where you can specify your `SparkSession` options, like when you create one in a basic `Spark` process. You must specify your `SparkSession` options under `setl.config.spark`.
 
+</details>
+
 <h3>1.2. Entry point with specific configurations</h3>
+
+<details> <summary></summary>
 
 You can specify the configuration file that the default `ConfigLoader` should read. In the code below, instead of reading `<app_env>.conf` where `<app_env>` is defined in `application.conf`, it will read `own_config_file.conf`.
 > ```
@@ -65,9 +71,15 @@ You can also set your own `ConfigLoader`. In the code below, `Setl` will load `l
  
 You can also set your own `SparkSession` which will be used by `Setl`, with the `setSparkSession()` method. Please refer to the documentation or the source code of [SETL](https://github.com/SETL-Developers/setl).
 
+</details>
+
 <h3>1.3 Utilities</h3>
 
+<details> <summary></summary>
+
 <h5>Helper methods</h5>
+
+<details> <summary></summary>
 
 There are some quick methods that can be used to set your `SparkSession` configurations.
 > ```
@@ -81,7 +93,11 @@ There are some quick methods that can be used to set your `SparkSession` configu
 * `setSparkMaster()` method set the `spark.master` property of the `SparkSession` in your `Setl` entry point
 * `setShufflePartitions()` method set the `spark.sql.shuffle.partitions` property of the `SparkSession` in your `Setl` entry point
 
+</details>
+
 <h5>SparkSession options</h5>
+
+<details> <summary></summary>
 
 As mentioned earlier, the options you want to define in your `SparkSession` must be specified under `setl.config.spark` in your configuration file. However, you can change this path by using the `setlSetlConfigPath()` method:
 > ```
@@ -100,7 +116,13 @@ As mentioned earlier, the options you want to define in your `SparkSession` must
 
 </details>
 
-<details> <summary>Exercises</summary>
+</details>
+
+</details>
+
+##
+
+<details> <summary><strong>Exercises</strong></summary>
 
 Nothing too crazy: try to build your own `Setl` object! Run your code and examine the logs to check about the options you specified. Make sure it loads the correct configuration file.
 
@@ -108,7 +130,7 @@ Nothing too crazy: try to build your own `Setl` object! Run your code and examin
 
 ## 2. Extract
 
-<details> <summary>Lesson</summary>
+<details> <summary><strong>Lesson</strong></summary>
 
 SETL supports two types of data accessors: Connector and SparkRepository.
 * A Connector is a non-typed abstraction of data access layer (DAL). For simplicity, you can understand it to as a Spark DataFrame.
@@ -120,6 +142,8 @@ For more information, please refer to the [official documentation](https://setl-
 To ingest data in the `Setl` object entry point, you first must register the data, using the `setConnector()` or the `setSparkRepository[T]` methods.
 
 ### 2.1 Registration with `Connector`
+
+<details> <summary></summary>
 
 ```
 val setl: Setl = Setl.builder()
@@ -154,7 +178,11 @@ In summary, to register a `Connector`, you need to:
 1. Specify an item in your configuration file. This item must have a `storage` key, which represents the type of the data. Other keys might be mandatory depending on this type.
 2. Register the data in your `Setl` object, using `setConnector(<item>)`.
 
+</details>
+
 ### 2.2 Registration with `SparkRepository`
+
+<details> <summary></summary>
 
 ```
 val setl: Setl = Setl.builder()
@@ -194,7 +222,9 @@ In summary, to register a `SparkRepository`, you need to:
 2. Create a class or a case class representing the object type of your data.
 3. Register the data in your `Setl` object, using `setSparkRepository[T](<item>)`.
 
-<details> <summary>Advanced</summary>
+</details>
+
+<details> <summary></summary>
     
 1. `Connector` or `SparkRepository`?
 
@@ -239,7 +269,11 @@ In summary, to register a `SparkRepository`, you need to:
 
 Most of the time, you will need to register multiple data sources.
 
+<details> <summary></summary>
+
 #### 2.3.1 Multiple `Connector`
+
+<details> <summary></summary>
 
 Let's start with `Connector`. Note that it is perfectly possible to register multiple `Connector`. However, and we will go through that later on, during the ingestion, there will be an issue if there are multiple `Connector`. `Setl` has no way to differentiate one `Connector` from another. You will need to set what is called a `deliveryId`.
 
@@ -259,7 +293,11 @@ setl1
     .setConnector("pokeGradesRepository", deliveryId = "grades")
 ```
 
+</details>
+
 #### 2.3.2 Multiple `SparkRepository`
+
+<details> <summary></summary>
 
 Let's now look at how we can register multiple `SparRepository`. If the `SparkRepository` you register all have different type, there will be no issue during the ingestion. Indeed, `Setl` is capable of differentiating the upcoming data by inferring the object type.
 
@@ -291,7 +329,13 @@ setl3
     .setSparkRepository[Grade]("digiGradesRepository", deliveryId = "digiGrades")
 ```
 
+</details>
+
+</details>
+
 ### 2.4 Data Ingestion
+
+<details> <summary></summary>
 
 Before deep diving into data ingestion, we first must learn about how `SETL` organizes an ETL process. `SETL` uses `Pipeline` and `Stage` to organize workflows. A `Pipeline` is where the whole ETL process will be done. The registered data are ingested inside a `Pipeline`, and all transformations and restitution will be done inside it. A `Pipeline` is composed of multiple `Stage`. A `Stage` allows you to modulate your project. It can be constituted of multiple `Factory`. You can understand a `Factory` as a module of your ETL process. So in order to "see" the data ingestion, we have to create a `Pipeline` and add a `Stage` to it. As it may be a little bit theoretical, let's look at some examples.
 
@@ -311,7 +355,7 @@ setl4
     .run()
 ```
 
-Before running the code, let's take a look at `IngestionFactory.scala`.
+Before running the code, let's take a look at `IngestionFactory`.
 
 ```
 class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
@@ -381,6 +425,8 @@ The `read()` function is typically where you will do your data preprocessing. Us
 
 The registered data is then correctly ingested. It is now ready to be used during the `process()` function.
 
+</details>
+
 ### 2.5 Summary
 
 In summary, the *extraction* part of an ETL process translates to the following in a `SETL` project:
@@ -397,7 +443,9 @@ Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_acce
 
 </details>
 
-<details> <summary>Exercises</summary>
+##
+
+<details> <summary><strong>Exercises</strong></summary>
 
 
 
@@ -405,13 +453,15 @@ Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_acce
 
 ## 3. Transform
 
-<details> <summary>Lesson</summary>
+<details> <summary><strong>Lesson</strong></summary>
 
 
 
 </details>
 
-<details> <summary>Exercises</summary>
+##
+
+<details> <summary><strong>Exercises</strong></summary>
 
 
 
@@ -419,13 +469,15 @@ Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_acce
 
 ## 4. Load
 
-<details> <summary>Lesson</summary>
+<details> <summary><strong>Lesson</strong></summary>
 
 
 
 </details>
 
-<details> <summary>Exercises</summary>
+##
+
+<details> <summary><strong>Exercises</strong></summary>
 
 
 
@@ -433,13 +485,15 @@ Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_acce
 
 ## 5. From local to production environment
 
-<details> <summary>Lesson</summary>
+<details> <summary><strong>Lesson</strong></summary>
 
 
 
 </details>
 
-<details> <summary>Exercises</summary>
+##
+
+<details> <summary><strong>Exercises</strong></summary>
 
 
 
