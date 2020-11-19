@@ -1,6 +1,6 @@
 # SETL examples
 
-Lessons and exercises to get familiar with the wonderful <a href="https://github.com/SETL-Developers/setl" target="_blank">SETL</a> framework!
+Lessons and exercises to get familiar with the wonderful [SETL](https://github.com/SETL-Developers/setl) framework!
 
 # Chapters
 
@@ -63,7 +63,7 @@ You can also set your own `ConfigLoader`. In the code below, `Setl` will load `l
 >     .getOrCreate()
 > ```
  
-You can also set your own `SparkSession` which will be used by `Setl`, with the `setSparkSession()` method. Please refer to the documentation or the source code of <a href="https://github.com/SETL-Developers/setl" target="_blank">SETL</a>.
+You can also set your own `SparkSession` which will be used by `Setl`, with the `setSparkSession()` method. Please refer to the documentation or the source code of [SETL](https://github.com/SETL-Developers/setl).
 
 <h3>1.3 Utilities</h3>
 
@@ -113,7 +113,7 @@ Nothing too crazy: try to build your own `Setl` object! Run your code and examin
 SETL supports two types of data accessors: Connector and SparkRepository.
 * A Connector is a non-typed abstraction of data access layer (DAL). For simplicity, you can understand it to as a Spark DataFrame.
 * A SparkRepository is a typed abstraction data access layer (DAL). For simplicity, you can understand it as a Spark Dataset.
-For more information, please refer to the <a href="https://setl-developers.github.io/setl/" target="_blank">official documentation</a>.
+For more information, please refer to the [official documentation](https://setl-developers.github.io/setl/).
 
 `SETL` supports multiple data format, such as CSV, JSON, Parquet, Excel, Cassandra, DynamoDB, JDBC or Delta.
 
@@ -311,7 +311,7 @@ setl4
     .run()
 ```
 
-Before running the code, let's take a look at `IngestionFactory`.
+Before running the code, let's take a look at `IngestionFactory.scala`.
 
 ```
 class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
@@ -393,7 +393,7 @@ In summary, the *extraction* part of an ETL process translates to the following 
 
 ### 2.6 Data format configuration cheat sheet
 
-Cheat sheet can be found <a href="https://setl-developers.github.io/setl/data_access_layer/configuration_example" target="_blank">here</a>.
+Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_access_layer/configuration_example).
 
 </details>
 
