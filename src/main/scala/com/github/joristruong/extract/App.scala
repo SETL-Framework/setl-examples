@@ -1,6 +1,6 @@
 package com.github.joristruong.extract
 
-import com.github.joristruong.extract.factory.IngestionFactory
+import com.github.joristruong.extract.factory.{AutoLoadIngestionFactory, IngestionFactory}
 import com.github.joristruong.utils.{Grade, TestObject}
 import com.jcdecaux.setl.Setl
 import com.jcdecaux.setl.storage.connector.Connector
@@ -115,5 +115,26 @@ object App {
       // Before running the code, I invite you to go over `IngestionFactory` for more details. Feel free to remove the line comment below afterwards.
       //.run() // Run the `Pipeline` and execute what's inside it. In this case, the code inside `IngestionFactory` will be executed.
 
+    /**
+     * If you want to set some primary type parameters, you can use the `setInput[T]()` method.
+     * Those *inputs* are directly set in the `Pipeline`, and there are no registrations like for `Connector` or `SparkRepository`.
+     * Let's head over to `AutoLoadIngestionFactory` to see how these inputs are retrieved.
+     */
+    val setl5: Setl = Setl.builder()
+      .withDefaultConfigLoader()
+      .getOrCreate()
+
+    setl5
+      .setSparkRepository[TestObject]("testObjectRepository", deliveryId = "testObjectRepository")
+
+    setl5
+      .newPipeline()
+      .setInput[Int](42)
+      .setInput[String]("SETL", deliveryId = "ordered")
+      .setInput[String]("LTES", deliveryId = "reversed")
+      .setInput[Array[String]](Array("S", "E", "T", "L"))
+      .addStage[AutoLoadIngestionFactory]()
+      // Before running the code, I invite you to go over `AutoLoadIngestionFactory` for more details. Feel free to remove the line comment below afterwards.
+      //.run()
   }
 }
