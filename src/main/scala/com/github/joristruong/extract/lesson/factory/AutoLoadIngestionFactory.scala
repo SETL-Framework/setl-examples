@@ -1,4 +1,4 @@
-package com.github.joristruong.extract.factory
+package com.github.joristruong.extract.lesson.factory
 
 import com.github.joristruong.utils.TestObject
 import com.jcdecaux.setl.annotation.Delivery
