@@ -427,7 +427,120 @@ The registered data is then correctly ingested. It is now ready to be used durin
 
 </details>
 
-### 2.5 Summary
+### 2.5 Additional resources
+
+<details> <summary></summary>
+
+#### 2.5.1 `AutoLoad`
+
+<details> <summary></summary>
+
+In the previous `IngestionFactory`, we would set a `val` of type `SparkRepository` but also a `var` in which we assign the corresponding `Dataset` in the `read()` function. With `autoLoad = true`, we can skip the first step and directly declare a `Dataset`. The `Dataset` of the `SparkRepository` will be automatically assigned in it.
+
+`App.scala`:
+```
+val setl5: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl5
+    .setSparkRepository[TestObject]("testObjectRepository", deliveryId = "testObjectRepository")
+
+setl5
+    .newPipeline()
+    .addStage[AutoLoadIngestionFactory]()
+    .run()
+```
+
+`AutoLoadIngestionFactory`
+```
+class AutoLoadIngestionFactory extends Factory[DataFrame] with HasSparkSession {
+
+  import spark.implicits._
+
+  @Delivery(id = "testObjectRepository", autoLoad = true)
+  val testObject: Dataset[TestObject] = spark.emptyDataset[TestObject]
+
+  override def read(): AutoLoadIngestionFactory.this.type = {
+    testObject.show(false)
+
+    this
+  }
+
+  override def process(): AutoLoadIngestionFactory.this.type = this
+
+  override def write(): AutoLoadIngestionFactory.this.type = this
+
+  override def get(): DataFrame = spark.emptyDataFrame
+}
+```
+
+Note that there is no way to use the `findBy()` method to filter the data, compared to the previous `Factory`. Also, `autoLoad` is available for `SparkRepository` only, and not for `Connector`.
+
+</details>
+
+#### 2.5.2 Adding parameters to the `Pipeline`
+
+<details> <summary></summary>
+
+If you want to set some primary type parameters, you can use the `setInput[T]()` method. Those *inputs* are directly set in the `Pipeline`, and there are no registrations like for `Connector` or `SparkRepository`.
+
+`App.scala`:
+```
+val setl5: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl5
+    .newPipeline()
+    .setInput[Int](42)
+    .setInput[String]("SETL", deliveryId = "ordered")
+    .setInput[String]("LTES", deliveryId = "reversed")
+    .setInput[Array[String]](Array("S", "E", "T", "L"))
+    .addStage[AutoLoadIngestionFactory]()
+    .run()
+```
+
+*Inputs* are retrieved in the same way `Connector` or `SparkRepository` are retrieved: the `@Delivery` annotation, and the `deliveryId` if necessary.
+
+`AutoLoadIngestionFactory.scala`:
+```
+class AutoLoadIngestionFactory extends Factory[DataFrame] with HasSparkSession {
+
+  import spark.implicits._
+
+  @Delivery
+  val integer: Int = 0
+  @Delivery(id = "ordered")
+  val firstString: String = ""
+  @Delivery(id = "reversed")
+  val secondString: String = ""
+  @Delivery
+  val stringArray: Array[String] = Array()
+
+  override def read(): AutoLoadIngestionFactory.this.type = {
+    // Showing that inputs work correctly
+    println("integer: " + integer) // integer: 42
+    println("ordered: " + firstString) // ordered: SETL
+    println("reversed: " + secondString) // reversed: LTES
+    println("array: " + stringArray.mkString(".")) // array: S.E.T.L
+
+    this
+  }
+
+  override def process(): AutoLoadIngestionFactory.this.type = this
+
+  override def write(): AutoLoadIngestionFactory.this.type = this
+
+  override def get(): DataFrame = spark.emptyDataFrame
+}
+```
+
+</details>
+
+</details>
+
+### 2.6 Summary
 
 In summary, the *extraction* part of an ETL process translates to the following in a `SETL` project:
 1. Create a configuration item representing the data you want to ingest in your configuration file.
@@ -437,7 +550,7 @@ In summary, the *extraction* part of an ETL process translates to the following 
 5. Retrieve your data using the `@Delivery` annotation.
 6. Your data is ready to be processed. 
 
-### 2.6 Data format configuration cheat sheet
+### 2.7 Data format configuration cheat sheet
 
 Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_access_layer/configuration_example).
 
