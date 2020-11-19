@@ -293,9 +293,105 @@ setl3
 
 ### 2.4 Data Ingestion
 
+Before deep diving into data ingestion, we first must learn about how `SETL` organizes an ETL process. `SETL` uses `Pipeline` and `Stage` to organize workflows. A `Pipeline` is where the whole ETL process will be done. The registered data are ingested inside a `Pipeline`, and all transformations and restitution will be done inside it. A `Pipeline` is composed of multiple `Stage`. A `Stage` allows you to modulate your project. It can be constituted of multiple `Factory`. You can understand a `Factory` as a module of your ETL process. So in order to "see" the data ingestion, we have to create a `Pipeline` and add a `Stage` to it. As it may be a little bit theoretical, let's look at some examples.
 
+`App.scala`:
+```
+val setl4: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
 
-### 2.5 Data format configuration cheat sheet
+setl4
+    .setConnector("testObjectRepository", deliveryId = "testObjectConnector")
+    .setSparkRepository[TestObject]("testObjectRepository", deliveryId = "testObjectRepository")
+
+setl4
+    .newPipeline() // Creation of a `Pipeline`.
+    .addStage[IngestionFactory]() // Add a `Stage` composed of one `Factory`: `IngestionFactory`.
+    .run()
+```
+
+Before running the code, let's take a look at `IngestionFactory`.
+
+```
+class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
+
+    import spark.implicits._
+
+    override def read(): IngestionFactory.this.type = this
+
+    override def process(): IngestionFactory.this.type = this
+
+    override def write(): IngestionFactory.this.type = this
+
+    override def get(): DataFrame = spark.emptyDataFrame
+}
+```
+
+This is a skeleton of a `SETL Factory`. A `SETL Factory` contains 4 main functions: `read()`, `process()`, `write()` and `get()`. These functions will be executed in this order. These 4 functions are the core of your ETL process. This is where you will write your classic `Spark` code of data transformation.
+
+You can see that `IngestionFactory` is a child class of `Factory[DataFrame]`. This simply means that the output of this data transformation must be a `DataFrame`. `IngestionFactory` also has the trait `HasSparkSession`. It allows you to access the `SparkSession` easily. Usually, we use it simply to import `spark.implicits`.
+
+Where is the ingestion? 
+
+```
+class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
+
+    import spark.implicits._
+
+    @Delivery(id = "testObjectConnector")
+    val testObjectConnector: Connector = Connector.empty
+    @Delivery(id = "testObjectRepository")
+    val testObjectRepository: SparkRepository[TestObject] = SparkRepository[TestObject]
+    
+    var testObjectOne: DataFrame = spark.emptyDataFrame
+    var testObjectTwo: Dataset[TestObject] = spark.emptyDataset[TestObject]
+
+    override def read(): IngestionFactory.this.type = this
+
+    override def process(): IngestionFactory.this.type = this
+
+    override def write(): IngestionFactory.this.type = this
+
+    override def get(): DataFrame = spark.emptyDataFrame
+}
+```
+
+The structure of a `SETL Factory` starts with the `@Delivery` annotation. This annotation is the way `SETL` ingest the corresponding registered data. If you look at `App.scala` where this `IngestionFactory` is called, the associated `Setl` object has registered a `Connector` with id `testObjectConnector` and a `SparkRepository` with id `testObjectRepository`.
+
+> Note that it is not mandatory to use a `deliveryId` in this case, because there is only one `Factory` with `TestObject` as object type. You can try to remove the `deliveryId` when registering the `SparkRepository` and the `id` in the `@Delivery` annotation. The code will still run. Same can be said for the `Connector`.
+
+With the `@Delivery` annotation, we retrieved a `Connector` and `SparkRepository`. The data has been correctly ingested, but these are data access layers. To process the data, we have to retrieve the `DataFrame` of the `Connector` and the `Dataset` of the `SparkRepository`. This is why we defined two `var`, one of type `DataFrame` and one of type `Dataset[TestObject]`. We will assign values to them during the `read()` function. These `var` are accessible from all the 4 core functions, and you will use them for your ETL process.
+
+To retrieve the `DataFrame` of the `Connector` and the `Dataset` of the `SparkRepository`, we can use the `read()` function.
+
+```
+override def read(): IngestionFactory.this.type = {
+    testObjectOne = testObjectConnector.read()
+    testObjectTwo = testObjectRepository.findAll()
+
+    this
+}
+```
+
+The `read()` function is typically where you will do your data preprocessing. Usually, we will simply assign values to our variables. Occasionally, this is typically where you would want to do some filtering on your data.
+
+* To retrieve the `DataFrame` of a `Connector`, use the `read()` method.
+* To retrieve the `Dataset` of a `SparkRepository`, you can use the `findAll()` method, or the `findBy()` method. The latter allows you to do filtering based on `Condition`. More info [here](https://setl-developers.github.io/setl/Condition).
+
+The registered data is then correctly ingested. It is now ready to be used during the `process()` function.
+
+### 2.5 Summary
+
+In summary, the *extraction* part of an ETL process translates to the following in a `SETL` project:
+1. Create a configuration item representing the data you want to ingest in your configuration file.
+2. Register the data in your `Setl` object by using the `setConnector()` or the `setSparkRepository[]()` method. Reminder: the mandatory parameter is the name of your object in your configuration file, and you might want to add a `deliveryId`.
+3. Create a new `Pipeline` in your `Setl` object, then add a `Stage` with a `Factory` in which you want to process your data.
+4. Create a `SETL Factory`, containing the 4 core functions: `read()`, `process()`, `write()` and `get()`.
+5. Retrieve your data using the `@Delivery` annotation.
+6. Your data is ready to be processed. 
+
+### 2.6 Data format configuration cheat sheet
 
 Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_access_layer/configuration_example).
 
