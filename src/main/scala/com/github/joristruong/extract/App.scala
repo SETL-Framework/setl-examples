@@ -1,5 +1,6 @@
 package com.github.joristruong.extract
 
+import com.github.joristruong.extract.factory.IngestionFactory
 import com.github.joristruong.utils.{Grade, TestObject}
 import com.jcdecaux.setl.Setl
 import com.jcdecaux.setl.storage.connector.Connector
@@ -9,7 +10,7 @@ import com.jcdecaux.setl.storage.connector.Connector
  */
 object App {
   def main(args: Array[String]): Unit = {
-    val setl: Setl = Setl.builder()
+    val setl0: Setl = Setl.builder()
       .withDefaultConfigLoader()
       .getOrCreate()
 
@@ -26,16 +27,16 @@ object App {
      * Make sure you understand the data object `testObjectRepository` that we defined in the configuration file.
      * For CSV files, SETL is using Apache Spark API. The options you see in the object (except for `storage` of course) correspond to the options used when reading a CSV file with Apache Spark.
      */
-    setl
+    setl0
       .setConnector("testObjectRepository")
       .setSparkRepository[TestObject]("testObjectRepository")
 
     /**
      * `connectorData` is a DataFrame and `sparkRepositoryData` is a Dataset[TestObject].
      */
-    val connectorData = setl.getConnector[Connector]("testObjectRepository").read()
+    val connectorData = setl0.getConnector[Connector]("testObjectRepository").read()
     connectorData.show(false)
-    val sparkRepositoryData = setl.getSparkRepository[TestObject]("testObjectRepository").findAll()
+    val sparkRepositoryData = setl0.getSparkRepository[TestObject]("testObjectRepository").findAll()
     sparkRepositoryData.show(false)
 
     /**
@@ -90,6 +91,29 @@ object App {
     setl3
       .setSparkRepository[Grade]("pokeGradesRepository", deliveryId = "pokeGrades")
       .setSparkRepository[Grade]("digiGradesRepository", deliveryId = "digiGrades")
+
+    /**
+     * Before deep diving into data ingestion, we first must learn about how `SETL` organizes an ETL process.
+     * `SETL` uses `Pipeline` and `Stage` to organize workflows.
+     * A `Pipeline` is where the whole ETL process will be done. The registered data are ingested inside a `Pipeline`, and all transformations and restitution will be done inside it.
+     * A `Pipeline` is constituted of multiple `Stage`.
+     * A `Stage` allows you to modulate your project. It can be constituted of multiple `Factory`. You can understand a `Factory` as a module of your ETL process.
+     * So in order to "see" the data ingestion, we have to create a `Pipeline` and add a `Stage` to it.
+     * As it may be a little bit theoretical, let's look at some examples.
+     */
+    val setl4: Setl = Setl.builder()
+      .withDefaultConfigLoader()
+      .getOrCreate()
+
+    setl4
+      .setConnector("testObjectRepository", deliveryId = "testObjectConnector")
+      .setSparkRepository[TestObject]("testObjectRepository", deliveryId = "testObjectRepository")
+
+    setl4
+      .newPipeline() // Creation of a `Pipeline`.
+      .addStage[IngestionFactory]() // Add a `Stage` composed of one `Factory`: `IngestionFactory`.
+      // Before running the code, I invite you to go over `IngestionFactory` for more details. Feel free to remove the line comment below afterwards.
+      //.run() // Run the `Pipeline` and execute what's inside it. In this case, the code inside `IngestionFactory` will be executed.
 
   }
 }
