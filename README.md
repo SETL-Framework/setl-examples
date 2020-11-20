@@ -509,32 +509,32 @@ setl5
 ```
 class AutoLoadIngestionFactory extends Factory[DataFrame] with HasSparkSession {
 
-  import spark.implicits._
+    import spark.implicits._
 
-  @Delivery
-  val integer: Int = 0
-  @Delivery(id = "ordered")
-  val firstString: String = ""
-  @Delivery(id = "reversed")
-  val secondString: String = ""
-  @Delivery
-  val stringArray: Array[String] = Array()
+    @Delivery
+    val integer: Int = 0
+    @Delivery(id = "ordered")
+    val firstString: String = ""
+    @Delivery(id = "reversed")
+    val secondString: String = ""
+    @Delivery
+    val stringArray: Array[String] = Array()
 
-  override def read(): AutoLoadIngestionFactory.this.type = {
-    // Showing that inputs work correctly
-    println("integer: " + integer) // integer: 42
-    println("ordered: " + firstString) // ordered: SETL
-    println("reversed: " + secondString) // reversed: LTES
-    println("array: " + stringArray.mkString(".")) // array: S.E.T.L
+    override def read(): AutoLoadIngestionFactory.this.type = {
+      // Showing that inputs work correctly
+      println("integer: " + integer) // integer: 42
+      println("ordered: " + firstString) // ordered: SETL
+      println("reversed: " + secondString) // reversed: LTES
+      println("array: " + stringArray.mkString(".")) // array: S.E.T.L
 
-    this
-  }
+      this
+    }
 
-  override def process(): AutoLoadIngestionFactory.this.type = this
+    override def process(): AutoLoadIngestionFactory.this.type = this
 
-  override def write(): AutoLoadIngestionFactory.this.type = this
+    override def write(): AutoLoadIngestionFactory.this.type = this
 
-  override def get(): DataFrame = spark.emptyDataFrame
+    override def get(): DataFrame = spark.emptyDataFrame
 }
 ```
 
@@ -606,32 +606,32 @@ After seeing what the `read()` function in a `Factory` looks like, let's have a 
 ```
 class ProcessFactory extends Factory[DataFrame] with HasSparkSession {
 
-  @Delivery(id = "testObject")
-  val testObjectConnector: Connector = Connector.empty
+    @Delivery(id = "testObject")
+    val testObjectConnector: Connector = Connector.empty
 
-  var testObject: DataFrame = spark.emptyDataFrame
+    var testObject: DataFrame = spark.emptyDataFrame
 
-  var result: DataFrame = spark.emptyDataFrame
+    var result: DataFrame = spark.emptyDataFrame
 
-  override def read(): ProcessFactory.this.type = {
-    testObject = testObjectConnector.read()
+    override def read(): ProcessFactory.this.type = {
+      testObject = testObjectConnector.read()
 
-    this
-  }
+      this
+    }
 
-  override def process(): ProcessFactory.this.type = {
-    val testObjectDate = testObject.withColumn("date", lit("2020-11-20"))
+    override def process(): ProcessFactory.this.type = {
+      val testObjectDate = testObject.withColumn("date", lit("2020-11-20"))
 
-    result = testObjectDate
-      .withColumnRenamed("value1", "name")
-      .withColumnRenamed("value2", "grade")
+      result = testObjectDate
+        .withColumnRenamed("value1", "name")
+        .withColumnRenamed("value2", "grade")
 
-    this
-  }
+      this
+    }
 
-  override def write(): ProcessFactory.this.type = this
+    override def write(): ProcessFactory.this.type = this
 
-  override def get(): DataFrame = spark.emptyDataFrame
+    override def get(): DataFrame = spark.emptyDataFrame
 }
 ```
 
@@ -645,7 +645,89 @@ As it is previously said, there is nothing new to learn here: you just write you
 
 <details> <summary></summary>
 
+You might not learn anything new for `SETL` for data transformations in itself, but `SETL` helps you to structure them. We will now take a look about `SETL Transformer`. You already know about `Factory`. A `Factory` can contain multiple `Transformer`. A `Transformer` is a piece of highly reusable code that represents one data transformation. Let's look at how it works.
 
+```
+class ProcessFactoryWithTransformer extends Factory[DataFrame] with HasSparkSession {
+
+    @Delivery(id = "testObject")
+    val testObjectConnector: Connector = Connector.empty
+
+    var testObject: DataFrame = spark.emptyDataFrame
+
+    var result: DataFrame = spark.emptyDataFrame
+
+    override def read(): ProcessFactoryWithTransformer.this.type = {
+        testObject = testObjectConnector.read()
+  
+        this
+    }
+
+    override def process(): ProcessFactoryWithTransformer.this.type = {
+        val testObjectDate = new DateTransformer(testObject).transform().transformed
+        result = new RenameTransformer(testObjectDate).transform().transformed
+  
+        this
+    }
+
+    override def write(): ProcessFactoryWithTransformer.this.type = this
+
+    override def get(): DataFrame = spark.emptyDataFrame
+}
+```
+
+If you compare this `Factory` with the previous `ProcessFactory` in the last section, it does the same job. However, the workflow is more structured. You can see that in the `process()` function, there is no `Spark` functions for data transformations. Instead, we used `Transformer`. The data transformation will be done in `Transformer`. This allows to make to code highly reusable and add a lot more structure to it. In the previous `ProcessFactory`, we can divide the job by two: the first process is adding a new column, and the second process is renaming the column.
+
+First, we are calling the first `Transformer` by passing our input `DataFrame`. The `transform()` method is then called, and the result is retrieved with the `transformed` getter. The second data transformation is done with `RenameTransformer`, and the result is assigned to our `result` variable. Let's have a look at each `Transformer`.
+
+A `Transformer` has two core methods:
+* `transform()` which is where the data transformation should happen.
+* `transformed` which is a getter to retrieve the result.
+
+Typically, we will also declare a variable in which we will assign the result of the transformation. In this case, `transformedData`. The `transformed` getter returns this variable. This is why in `ProcessingFactoryWithTransformer`, the `transform()` method is called, before calling the `transformed` getter.
+
+`DateTransformer.scala`:
+```
+class DateTransformer(testObject: DataFrame) extends Transformer[DataFrame] with HasSparkSession {
+    private[this] var transformedData: DataFrame = spark.emptyDataFrame
+
+    override def transformed: DataFrame = transformedData
+
+    override def transform(): DateTransformer.this.type = {
+      transformedData = testObject
+          .withColumn("date", lit("2020-11-20"))
+
+      this
+    }
+}
+```
+
+`DateTransformer` represents the first data transformation that is done in the `ProcessFactory` in the previous section: adding a new column.
+
+`RenameTransformer`:
+```
+class RenameTransformer(testObjectDate: DataFrame) extends Transformer[DataFrame] with HasSparkSession {
+    private[this] var transformedData: DataFrame = spark.emptyDataFrame
+
+    override def transformed: DataFrame = transformedData
+
+    override def transform(): RenameTransformer.this.type = {
+      transformedData = testObjectDate
+        .withColumnRenamed("value1", "name")
+        .withColumnRenamed("value2", "grade")
+
+      this
+    }
+}
+```
+
+`RenameTransformer` represents the second data transformation that is done in the `ProcessFactory` in the previous section: renaming the columns.
+
+### 3.3 Summary
+
+The classic data transformations happen in the `process()` function of your `Factory`. This is how you write your data transformations in `SETL`, given that you already did what is needed in the Extract part. You have two solutions:
+1. Write all the data transformations with `Spark` functions in the `process()` function of your `Factory`. Remember to set a global variable to store the result so that it can be used in the next functions of the `Factory`.
+2. Organize your workflow with `Transformer`. This is best for code reusability, readability, understanding and structuring. To use a `Transformer`, remember that you need to pass parameters, usually the `DataFrame` or the `Dataset` you want to transform, eventually some parameters. You need to add the `transform()` function which is where the core `Spark` functions should be called, and the `transformed` getter to retrieve the result. 
 
 </details>
 

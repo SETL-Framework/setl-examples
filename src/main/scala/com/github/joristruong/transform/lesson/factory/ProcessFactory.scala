@@ -10,8 +10,6 @@ import org.apache.spark.sql.functions._
 
 class ProcessFactory extends Factory[DataFrame] with HasSparkSession {
 
-  import spark.implicits._
-
   @Delivery(id = "testObject")
   val testObjectConnector: Connector = Connector.empty
 
