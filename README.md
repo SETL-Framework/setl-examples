@@ -562,7 +562,33 @@ Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_acce
 
 <details> <summary><strong>Exercises</strong></summary>
 
+<details> <summary>a) Ingesting a CSV file</summary>
 
+</details>
+
+<details> <summary>b) Ingesting a JSON file</summary>
+
+</details>
+
+<details> <summary>c) Ingesting a Parquet file</summary>
+
+</details>
+
+<details> <summary>d) Ingesting an Excel file</summary>
+
+</details>
+
+<details> <summary>e) Ingesting data from DynamoDB</summary>
+
+</details>
+
+<details> <summary>f) Ingesting data from Cassandra file</summary>
+
+</details>
+
+<details> <summary>g) Ingesting data from JDBC file</summary>
+
+</details>
 
 </details>
 
