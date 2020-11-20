@@ -596,7 +596,58 @@ Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_acce
 
 <details> <summary><strong>Lesson</strong></summary>
 
+Transformations in `SETL` are the easiest part to learn. There is nothing new if you are used to write ETL jobs with `Spark`. This is where you will transfer the code you write with `Spark` into `SETL`.
 
+### 3.1 `Factory`
+
+<details> <summary></summary>
+
+After seeing what the `read()` function in a `Factory` looks like, let's have a look at the `process()` function that is executed right after.
+```
+class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
+
+  @Delivery(id = "testObject")
+  val testObjectConnector: Connector = Connector.empty
+
+  var testObject: DataFrame = spark.emptyDataFrame
+
+  var result: DataFrame = spark.emptyDataFrame
+
+  override def read(): IngestionFactory.this.type = {
+    testObject = testObjectConnector.read()
+
+    this
+  }
+
+  override def process(): IngestionFactory.this.type = {
+    val testObjectDate = testObject.withColumn("date", lit("2020-11-20"))
+
+    result = testObjectDate
+      .withColumnRenamed("value1", "name")
+      .withColumnRenamed("value2", "grade")
+
+    this
+  }
+
+  override def write(): IngestionFactory.this.type = this
+
+  override def get(): DataFrame = spark.emptyDataFrame
+}
+```
+
+You should understand the first part of the code with the ingestion thanks to the `@Delivery` and the `read()` function. Here is declared a `var result` in which will be stored the result of the data transformations. It is declared globally so that it can be accessed later in the `write()` and `get()` functions. The data transformations are what is inside the `process()` function, and you must surely know what they do.
+
+As it is previously said, there is nothing new to learn here: you just write your `Spark` functions to transform your data, and this is unrelated to `SETL`. 
+
+</details>
+
+### 3.2 `Transformer`
+
+<details> <summary></summary>
+
+
+
+</details>
 
 </details>
 
