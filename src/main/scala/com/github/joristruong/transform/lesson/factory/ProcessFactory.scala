@@ -8,7 +8,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
 
-class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
+class ProcessFactory extends Factory[DataFrame] with HasSparkSession {
 
   import spark.implicits._
 
@@ -22,7 +22,7 @@ class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
    */
   var result: DataFrame = spark.emptyDataFrame
 
-  override def read(): IngestionFactory.this.type = {
+  override def read(): ProcessFactory.this.type = {
     testObject = testObjectConnector.read()
 
     // Showing that ingestion worked correctly
@@ -35,7 +35,7 @@ class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
    * `process()` is the function that will be executed right after `read()`.
    * This is where you will write your classic Spark functions.
    */
-  override def process(): IngestionFactory.this.type = {
+  override def process(): ProcessFactory.this.type = {
     val testObjectDate = testObject.withColumn("date", lit("2020-11-20"))
 
     result = testObjectDate
@@ -51,7 +51,7 @@ class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
   /**
    * We will learn about the `write()` function during the **Load** chapter.
    */
-  override def write(): IngestionFactory.this.type = this
+  override def write(): ProcessFactory.this.type = this
 
   /**
    * We will learn about the `get()` function during the **Load** chapter.

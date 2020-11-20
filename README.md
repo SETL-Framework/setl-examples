@@ -604,7 +604,7 @@ Transformations in `SETL` are the easiest part to learn. There is nothing new if
 
 After seeing what the `read()` function in a `Factory` looks like, let's have a look at the `process()` function that is executed right after.
 ```
-class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
+class ProcessFactory extends Factory[DataFrame] with HasSparkSession {
 
   @Delivery(id = "testObject")
   val testObjectConnector: Connector = Connector.empty
@@ -613,13 +613,13 @@ class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
 
   var result: DataFrame = spark.emptyDataFrame
 
-  override def read(): IngestionFactory.this.type = {
+  override def read(): ProcessFactory.this.type = {
     testObject = testObjectConnector.read()
 
     this
   }
 
-  override def process(): IngestionFactory.this.type = {
+  override def process(): ProcessFactory.this.type = {
     val testObjectDate = testObject.withColumn("date", lit("2020-11-20"))
 
     result = testObjectDate
@@ -629,7 +629,7 @@ class IngestionFactory extends Factory[DataFrame] with HasSparkSession {
     this
   }
 
-  override def write(): IngestionFactory.this.type = this
+  override def write(): ProcessFactory.this.type = this
 
   override def get(): DataFrame = spark.emptyDataFrame
 }
