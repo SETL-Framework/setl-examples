@@ -151,10 +151,12 @@ val setl: Setl = Setl.builder()
     .getOrCreate()
 
 setl
-    .setConnector("testObjectRepository")
+    .setConnector("testObjectRepository", deliveryId = "id")
 ```
 
-The argument provided is a `String` that refers to an item in the specified configuration file.
+The first argument provided is a `String` that refers to an item in the specified configuration file. The second argument, `deliveryId`, must be specified for data ingestion. We will see in section **2.3** why it is necessary. Just think of it as an ID, and the only way for `SETL` to ingest a `Connector` is with its ID.
+
+Note that `deliveryId` is not necessary for the registration but it is for the ingestion. However there is no much use if we only register the data. If you are a beginner in `SETL`, you should think as setting a `Connector` must always come with a `deliveryId`.
 
 `local.conf`:
 ```
@@ -176,7 +178,7 @@ As you can see, `testObjectRepository` defines a configuration for data of type 
 
 In summary, to register a `Connector`, you need to:
 1. Specify an item in your configuration file. This item must have a `storage` key, which represents the type of the data. Other keys might be mandatory depending on this type.
-2. Register the data in your `Setl` object, using `setConnector(<item>)`.
+2. Register the data in your `Setl` object, using `setConnector("<item>", deliveryId = "<id>")`.
 
 </details>
 
@@ -220,7 +222,7 @@ case class TestObject(value1: String,
 In summary, to register a `SparkRepository`, you need to:
 1. Specify an item in your configuration file. This item must have a `storage` key, which represents the type of the data. Other keys might be mandatory depending on this type.
 2. Create a class or a case class representing the object type of your data.
-3. Register the data in your `Setl` object, using `setSparkRepository[T](<item>)`.
+3. Register the data in your `Setl` object, using `setSparkRepository[T]("<item>")`.
 
 </details>
 
@@ -275,7 +277,7 @@ Most of the time, you will need to register multiple data sources.
 
 <details> <summary></summary>
 
-Let's start with `Connector`. Note that it is perfectly possible to register multiple `Connector`. However, and we will go through that later on, during the ingestion, there will be an issue if there are multiple `Connector`. `Setl` has no way to differentiate one `Connector` from another. You will need to set what is called a `deliveryId`.
+Let's start with `Connector`. Note that it is perfectly possible to register multiple `Connector`, as said previously. However, there will be an issue during the ingestion. `Setl` has no way to differentiate one `Connector` from another. You will need to set what is called a `deliveryId`.
 
 ```
 val setl1: Setl = Setl.builder()
@@ -287,7 +289,7 @@ setl1
     .setConnector("testObjectRepository")
     .setConnector("pokeGradesRepository")
  
-// Please get used to set a `deliveryId` when you register multiple `Connector`
+// Please get used to set a `deliveryId` when you register one or multiple `Connector`
 setl1
     .setConnector("testObjectRepository", deliveryId = "testObject")
     .setConnector("pokeGradesRepository", deliveryId = "grades")

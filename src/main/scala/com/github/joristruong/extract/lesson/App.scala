@@ -21,14 +21,14 @@ object App {
      */
 
     /**
-     * Using `setConnector()` and `setSparkRepository[T]()` make SETL register the corresponding data.
+     * Using `setConnector()` and `setSparkRepository[T]()` make `SETL` register the corresponding data.
      * The provided argument is a string that must be found at the configuration file.
      * Multiple storage types are supported in SETL. We will go through each of them later on.
      * Make sure you understand the data object `testObjectRepository` that we defined in the configuration file.
      * For CSV files, SETL is using Apache Spark API. The options you see in the object (except for `storage` of course) correspond to the options used when reading a CSV file with Apache Spark.
      */
     setl0
-      .setConnector("testObjectRepository")
+      .setConnector("testObjectRepository", deliveryId = "testObject")
       .setSparkRepository[TestObject]("testObjectRepository")
 
     /**
@@ -55,7 +55,7 @@ object App {
       .setConnector("testObjectRepository")
       .setConnector("pokeGradesRepository")
 
-    // Please get used to set a `deliveryId` when you register multiple `Connector`
+    // Please get used to set a `deliveryId` when you register one or multiple `Connector`
     setl1
       .setConnector("testObjectRepository", deliveryId = "testObject")
       .setConnector("pokeGradesRepository", deliveryId = "grades")
