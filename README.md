@@ -544,6 +544,8 @@ class AutoLoadIngestionFactory extends Factory[DataFrame] with HasSparkSession {
 
 ### 2.6 Summary
 
+<details> <summary></summary>
+
 In summary, the *extraction* part of an ETL process translates to the following in a `SETL` project:
 1. Create a configuration item representing the data you want to ingest in your configuration file.
 2. Register the data in your `Setl` object by using the `setConnector()` or the `setSparkRepository[]()` method. Reminder: the mandatory parameter is the name of your object in your configuration file, and you might want to add a `deliveryId`.
@@ -551,6 +553,8 @@ In summary, the *extraction* part of an ETL process translates to the following 
 4. Create a `SETL Factory`, containing the 4 core functions: `read()`, `process()`, `write()` and `get()`.
 5. Retrieve your data using the `@Delivery` annotation.
 6. Your data is ready to be processed. 
+
+</details>
 
 ### 2.7 Data format configuration cheat sheet
 
@@ -723,7 +727,11 @@ class RenameTransformer(testObjectDate: DataFrame) extends Transformer[DataFrame
 
 `RenameTransformer` represents the second data transformation that is done in the `ProcessFactory` in the previous section: renaming the columns.
 
+</details>
+
 ### 3.3 Summary
+
+<details> <summary></summary>
 
 The classic data transformations happen in the `process()` function of your `Factory`. This is how you write your data transformations in `SETL`, given that you already did what is needed in the Extract part. You have two solutions:
 1. Write all the data transformations with `Spark` functions in the `process()` function of your `Factory`. Remember to set a global variable to store the result so that it can be used in the next functions of the `Factory`.
