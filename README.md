@@ -753,7 +753,109 @@ The classic data transformations happen in the `process()` function of your `Fac
 
 <details> <summary><strong>Lesson</strong></summary>
 
+The Load processes with SETL correspond to two key ideas: writing the output, or passing the output. Passing the output allows to pass the result of a `Factory` to another `Factory`, for example. The second `Factory` is then using the result of a previous `Factory` as an input.
 
+### 4.1 Writing an output
+
+<details> <summary></summary>
+
+In order to write data, you need to register a `Connector` or a `SparkRepository`. As you probably already know, if you want to write a `DataFrame`, register a `Connector`. If you want to write a `Dataset`, register a `SparkRepository`. Do not forget that you must create a configuration item in the configuration file. There, you can specify the path of your output.
+
+`App.scala`:
+```
+val setl0: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl0
+    .setConnector("testObjectRepository", deliveryId = "testObject")
+    .setConnector("testObjectWriteRepository", deliveryId = "testObjectWrite")
+
+setl0
+    .newPipeline()
+    .setInput[String]("2020-11-23", deliveryId = "date")
+    .addStage[WriteFactory]()
+```
+
+`local.conf`:
+```
+testObjectRepository {
+  storage = "CSV"
+  path = "src/main/resources/test_objects.csv"
+  inferSchema = "true"
+  delimiter = ","
+  header = "true"
+  saveMode = "Overwrite"
+}
+
+testObjectWriteRepository {
+  storage = "EXCEL"
+  path = "src/main/resources/test_objects_write.xlsx"
+  useHeader = "true"
+  saveMode = "Overwrite"
+}
+```
+
+`WriteFactory.scala`:
+```
+class WriteFactory extends Factory[DataFrame] with HasSparkSession {
+
+    @Delivery(id = "date")
+    val date: String = ""
+    @Delivery(id = "testObject")
+    val testObjectConnector: Connector = Connector.empty
+    @Delivery(id = "testObjectWrite")
+    val testObjectWriteConnector: Connector = Connector.empty
+
+    var testObject: DataFrame = spark.emptyDataFrame
+
+    var result: DataFrame = spark.emptyDataFrame
+
+    override def read(): WriteFactory.this.type = {
+        testObject = testObjectConnector.read()
+
+        this
+    }
+
+    override def process(): WriteFactory.this.type = {
+        result = testObject
+            .withColumn("date", lit(date))
+
+        this
+    }
+  
+    override def write(): WriteFactory.this.type = {
+        testObjectWriteConnector.write(result.coalesce(1))
+
+        this
+    }
+
+    override def get(): DataFrame = spark.emptyDataFrame
+}
+```
+
+Note that in the `Deliveries`, there is one with the ID `testObjectWrite`. It has been previously registered in the `Pipeline`. We are retrieving it, but using it as a way to write our output.
+
+The `write()` function is the third executed function in a `Factory`, after `read()` and `process()`. The idea is to call the `write()` method of a `Connector` or a `SparkRepository`, and pass the result `DataFrame` or `Dataset` as argument. `SETL` will automatically read the configuration item; storage type, path and options, and write the result there.
+
+The advantage of using `SETL` for the Load process is that it makes it easier for you because you can change everything you need in your configuration item. If you ever want to change the data storage, you only need to modify the value of the corresponding key. Same for the path, or other options.
+
+**In summary**, to write an output in `SETL`, you need to:
+1. Create a configuration item in your configuration file
+2. Register the corresponding `Connector` or `SparkRepository`
+3. Ingest it in your `Factory` with the `@Delivery` annotation
+4. Use it in the `write()` function to write your output
+
+
+</details>
+
+### 4.2 Getting an output
+
+<details> <summary></summary>
+
+
+
+</details>
 
 </details>
 

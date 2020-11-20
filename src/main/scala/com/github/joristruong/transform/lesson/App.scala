@@ -44,6 +44,6 @@ object App {
       .newPipeline()
       .addStage[ProcessFactoryWithTransformer]()
       // Before running the code, I invite you to go over `ProcessFactoryWithTransformer` for more details. Feel free to remove the line comment below afterwards.
-      .run()
+      //.run()
   }
 }
