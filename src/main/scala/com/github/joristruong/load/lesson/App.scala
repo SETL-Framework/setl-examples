@@ -1,6 +1,6 @@
 package com.github.joristruong.load.lesson
 
-import com.github.joristruong.load.lesson.factory.WriteFactory
+import com.github.joristruong.load.lesson.factory.{FirstFactory, FirstFactoryBis, SecondFactory, SecondFactoryBis, WriteFactory}
 import com.jcdecaux.setl.Setl
 
 /**
@@ -37,5 +37,46 @@ object App {
       .addStage[WriteFactory]()
       // Before running the code, I invite you to go over `WriteFactory` for more details. Feel free to remove the line comment below afterwards.
       //.run()
+
+    /**
+     * As SETL is organized with `Factory`, it is possible to pass the result of a `Factory` to another.
+     * The result of a `Factory` can be of any type, it generally is a `DataFrame` or a `Dataset`. Remember that you specify the output type of a `Factory` when declaring it.
+     * We are now going to ingest data and make some transformations in `FirstFactory`, then use the result in `SecondFactory`.
+     */
+    val setl1: Setl = Setl.builder()
+      .withDefaultConfigLoader()
+      .getOrCreate()
+
+    setl1.setConnector("testObjectRepository", deliveryId = "testObject")
+
+    /**
+     * You can see in the `Pipeline` that `FirstFactory` is before `SecondFactory`.
+     */
+    setl1
+      .newPipeline()
+      .setInput[String]("2020-12-18", deliveryId = "date")
+      .addStage[FirstFactory]()
+      .addStage[SecondFactory]()
+      // Before running the code, I invite you to go over `FirstFactory` and `SecondFactory` for more details. Feel free to remove the line comment below afterwards.
+      //.run()
+
+    /**
+     * In the previous `Pipeline`, we retrieved the result of `FirstFactory` to use it in `SecondFactory`.
+     * The result of `FirstFactory` was a `DataFrame`, and we needed to retrieve it in `SecondFactory` by using the `producer` argument in the `@Delivery` annotation.
+     * In the following `Pipeline`, we are going to produce a `Dataset` from `FirstFactoryBis` and use it in `SecondFactoryBis`.
+     */
+    val setl2: Setl = Setl.builder()
+      .withDefaultConfigLoader()
+      .getOrCreate()
+
+    setl2.setConnector("testObjectRepository", deliveryId = "testObject")
+
+    setl2
+      .newPipeline()
+      .setInput[String]("2020-12-18", deliveryId = "date")
+      .addStage[FirstFactoryBis]()
+      .addStage[SecondFactoryBis]()
+      // Before running the code, I invite you to go over `FirstFactory` and `SecondFactory` for more details. Feel free to remove the line comment below afterwards.
+      .run()
   }
 }

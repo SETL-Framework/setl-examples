@@ -853,7 +853,203 @@ The advantage of using `SETL` for the Load process is that it makes it easier fo
 
 <details> <summary></summary>
 
+As SETL is organized with `Factory`, it is possible to pass the result of a `Factory` to another. The result of a `Factory` can be of any type, it generally is a `DataFrame` or a `Dataset`. 
 
+#### 4.2.1 Getting a `DataFrame`
+
+<details> <summary></summary>
+
+We are now going to ingest data and make some transformations in `FirstFactory`, then use the result in `SecondFactory`. You can see in the `Pipeline` that `FirstFactory` is before `SecondFactory`.
+
+`App.scala`:
+```
+val setl1: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl1.setConnector("testObjectRepository", deliveryId = "testObject")
+
+setl1
+    .newPipeline()
+    .setInput[String]("2020-12-18", deliveryId = "date")
+    .addStage[FirstFactory]()
+    .addStage[SecondFactory]()
+    .run()
+```
+
+`FirstFactory.scala`:
+```
+class FirstFactory extends Factory[DataFrame] with HasSparkSession {
+
+    @Delivery(id = "date")
+    val date: String = ""
+    @Delivery(id = "testObject")
+    val testObjectConnector: Connector = Connector.empty
+
+    var testObject: DataFrame = spark.emptyDataFrame
+
+    var result: DataFrame = spark.emptyDataFrame
+
+    override def read(): FirstFactory.this.type = {
+        testObject = testObjectConnector.read()
+
+        this
+    }
+
+  override def process(): FirstFactory.this.type = {
+    result = testObject
+      .withColumn("date", lit(date))
+
+    this
+  }
+
+  override def write(): FirstFactory.this.type = this
+
+  override def get(): DataFrame = result
+}
+```
+
+This `FirstFactory` is similar to the previous `WriteFactory`. Instead of writing the result, we are going to pass it in the `get()` function. The `get()` function is the fourth executed function in a `Factory`, after `read()`, `process()` and `write()`. In the above example, the output is simply returned.
+
+Remember that the type of the output is defined at the start of the `Factory`, when specifying the parent class. In this case, the output is a `DataFrame`. This output is then injected in the `Pipeline` as a `Deliverable`. The other `Factory` can then ingest it.
+
+`SecondFactory.scala`:
+```
+class SecondFactory extends Factory[DataFrame] with HasSparkSession {
+
+    import spark.implicits._
+
+    @Delivery(producer = classOf[FirstFactory])
+    val firstFactoryResult: DataFrame = spark.emptyDataFrame
+
+    var secondResult: DataFrame = spark.emptyDataFrame
+
+    override def read(): SecondFactory.this.type = this
+
+    override def process(): SecondFactory.this.type = {
+        secondResult = firstFactoryResult
+            .withColumn("secondDate", $"date")
+
+        secondResult.show(false)
+
+        this
+    }
+
+    override def write(): SecondFactory.this.type = this
+
+    override def get(): DataFrame = secondResult
+}
+```
+
+In this `SecondFactory`, we want to retrieve the output produced by `FirstFactory`. Noticed that we used the `producer` argument in the `@Delivery` annotation. This is how `SETL Pipeline` retrieves the output of a `Factory`: the result of a `Factory` is injected into the `Pipeline` as a `Deliverable`, which can be ingested with the `@Delivery` annotation. 
+
+</details>
+
+#### 4.2.2 Getting a `Dataset`
+
+<details> <summary></summary>
+
+In the previous `Pipeline`, we retrieved the result of `FirstFactory` to use it in `SecondFactory`. The result of `FirstFactory` was a `DataFrame`, and we needed to retrieve it in `SecondFactory` by using the `producer` argument in the `@Delivery` annotation. In the following `Pipeline`, we are going to produce a `Dataset` from `FirstFactoryBis` and use it in `SecondFactoryBis`.
+
+`App.scala`:
+```
+val setl2: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .getOrCreate()
+
+setl2
+    .setConnector("testObjectRepository", deliveryId = "testObject")
+
+setl2
+    .newPipeline()
+    .setInput[String]("2020-12-18", deliveryId = "date")
+    .addStage[FirstFactoryBis]()
+    .addStage[SecondFactoryBis]()
+    .run()
+```
+
+`FirstFactoryBis.scala`:
+```
+class FirstFactoryBis extends Factory[Dataset[TestObject]] with HasSparkSession {
+
+    import spark.implicits._
+
+    @Delivery(id = "testObject")
+    val testObjectConnector: Connector = Connector.empty
+
+    var testObject: DataFrame = spark.emptyDataFrame
+
+    var result: Dataset[TestObject] = spark.emptyDataset[TestObject]
+
+    override def read(): FirstFactoryBis.this.type = {
+      testObject = testObjectConnector.read()
+
+      this
+  }
+
+    override def process(): FirstFactoryBis.this.type = {
+        result = testObject
+            .withColumn("value1", concat($"value1", lit("42")))
+            .as[TestObject]
+
+        this
+    }
+
+    override def write(): FirstFactoryBis.this.type = this
+
+    override def get(): Dataset[TestObject] = result
+}
+```
+
+Noticed that the `FirstFactoryBis` is a child class of `Factory[Dataset[TestObject]]`, meaning that the output of it must be a `Dataset[TestObject]`. `result` is a variable of type `Dataset[TestObject]`, and the `get()` function returns it. This `Dataset` is injected into the `Pipeline`.
+
+`SecondFactoryBis.scala`:
+```
+class SecondFactoryBis extends Factory[DataFrame] with HasSparkSession {
+
+    import spark.implicits._
+
+    @Delivery(id = "date")
+    val date: String = ""
+    @Delivery
+    val firstFactoryBisResult: Dataset[TestObject] = spark.emptyDataset
+
+    var secondResult: DataFrame = spark.emptyDataFrame
+
+    override def read(): SecondFactoryBis.this.type = this
+
+    override def process(): SecondFactoryBis.this.type = {
+        secondResult = firstFactoryBisResult
+            .withColumn("secondDate", lit("date"))
+
+        secondResult.show(false)
+
+        this
+    }
+
+    override def write(): SecondFactoryBis.this.type = this
+
+    override def get(): DataFrame = secondResult
+}
+```
+
+The result of `FirstFactoryBis` is a `Dataset[TestObject]`. We used the `@Delivery` annotation to retrieve it. Compared to `SecondFactory`, we did not need to use the `producer` in the `@Delivery` annotation. This is because the `Pipeline` can infer on the data, and the only `Dataset[TestObject]` that it found is produced by `FirstFactoryBis`. So there is no need to specify it. This is the same mechanism that explains why a `Connector` needs a `deliveryId` to be retrieved, and not a `SparkRepository[T]` if there is only one of type T that is registered.
+
+</details>
+
+#### 4.2.3 Summary
+
+<details> <summary></summary>
+
+In summary, to use the output of a `Factory` in another one:
+1. Check the type of the output.
+2. Make sure that the `Stage` of the first `Factory` is before the `Stage` of the second `Factory`.
+3. The second `Factory` must be a child class of `Factory[T]` where `T` is the type of the output of the first `Factory`.
+4. Retrieve the output of the first `Factory` by using the `@Delivery` annotation. If it is a `DataFrame`, also use the `producer` argument.
+
+Note: Although it is possible to retrieve the output of a `Factory` in another one, most of the time, we would prefer to save the output of the first `Factory` in a `Connector` or `SparkRepository`, and re-use the same `Connector` or `SparkRepository` in the second `Factory` to retrieve the output.
+
+</details>
 
 </details>
 
