@@ -35,7 +35,7 @@ object App {
       .newPipeline()
       .setInput[String]("2020-11-23", deliveryId = "date")
       .addStage[WriteFactory]()
-      // Before running the code, I invite you to go over `ProcessFactoryWithTransformer` for more details. Feel free to remove the line comment below afterwards.
+      // Before running the code, I invite you to go over `WriteFactory` for more details. Feel free to remove the line comment below afterwards.
       //.run()
   }
 }
