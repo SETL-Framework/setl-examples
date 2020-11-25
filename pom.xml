@@ -64,12 +64,22 @@
         <dependency>
             <groupId>com.jcdecaux.setl</groupId>
             <artifactId>setl_${scala.compat.version}</artifactId>
-            <version>1.0.0-RC1</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-aws</artifactId>
-            <version>2.9.2</version>
+            <version>3.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.findify</groupId>
+            <artifactId>s3mock_${scala.compat.version}</artifactId>
+            <version>0.2.6</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>

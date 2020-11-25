@@ -339,7 +339,7 @@ setl3
 
 <details> <summary></summary>
 
-Before deep diving into data ingestion, we first must learn about how `SETL` organizes an ETL process. `SETL` uses `Pipeline` and `Stage` to organize workflows. A `Pipeline` is where the whole ETL process will be done. The registered data are ingested inside a `Pipeline`, and all transformations and restitution will be done inside it. A `Pipeline` is composed of multiple `Stage`. A `Stage` allows you to modulate your project. It can be constituted of multiple `Factory`. You can understand a `Factory` as a module of your ETL process. So in order to "see" the data ingestion, we have to create a `Pipeline` and add a `Stage` to it. As it may be a little bit theoretical, let's look at some examples.
+Before deep diving into data ingestion, we first must learn about how `SETL` organizes an ETL process. `SETL` uses `Pipeline` and `Stage` to organize workflows. A `Pipeline` is where the whole ETL process will be done. The registered data are ingested inside a `Pipeline`, and all transformations and restitution will be done inside it. A `Pipeline` is composed of multiple `Stage`. A `Stage` allows you to modularize your project. It can be constituted of multiple `Factory`. You can understand a `Factory` as a module of your ETL process. So in order to "see" the data ingestion, we have to create a `Pipeline` and add a `Stage` to it. As it may be a little bit theoretical, let's look at some examples.
 
 `App.scala`:
 ```
@@ -1067,6 +1067,140 @@ Note: Although it is possible to retrieve the output of a `Factory` in another o
 
 <details> <summary><strong>Lesson</strong></summary>
 
+The difference between multiple development environment consists in the location of files/data we want to read and the location of files/data we want to write.
+
+### 5.1 Changing the `path`
+
+<details> <summary></summary>
+
+In order to see how `SETL` handles between local and production environment, we are going to set two `Connector`: one for `local` and one for `prod`.
+
+`App.scala`:
+```
+val setl: Setl = Setl.builder()
+    .withDefaultConfigLoader("storage.conf")
+    .setSparkMaster("local[*]")
+    .getOrCreate()
+
+setl
+    .setConnector("pokeGradesRepository", deliveryId = "pokeGradesRepository")
+    .setConnector("pokeGradesRepositoryProd", deliveryId = "pokeGradesRepositoryProd")
+
+setl
+    .newPipeline()
+    .addStage[ProductionFactory]()
+    .run()
+```
+
+`storage.conf`:
+```
+setl.config.spark {
+  spark.hadoop.fs.s3a.access.key = "dummyaccess" // Used to connect to AWS S3 prod environment
+  spark.hadoop.fs.s3a.secret.key = "dummysecret" // Used to connect to AWS S3 prod environment
+  spark.driver.bindAddress = "127.0.0.1"
+}
+
+pokeGradesRepository {
+  storage = "CSV"
+  path = "src/main/resources/pokeGrades.csv"
+  inferSchema = "true"
+  delimiter = ","
+  header = "true"
+  saveMode = "Overwrite"
+}
+
+pokeGradesRepositoryProd {
+  storage = "CSV"
+  path = "s3a://setl-examples/pokeGrades.csv"
+  inferSchema = "true"
+  delimiter = ","
+  header = "true"
+  saveMode = "Overwrite"
+}
+```
+
+The difference between these two repositories is the path. The first object uses a local path, and the second uses a AWS S3 path, considered as a production environment. They are exactly the same file. When ingesting these files into a `Factory`, we can retrieve the same `DataFrame`. Thus, in `SETL`, it is possible to switch your development environment **without looking** at the code. You just need to make adjustments to the `path` of your configuration objects.
+
+</details>
+
+### 5.2 Generalize your configuration
+
+<details> <summary></summary>
+
+Most of the time, you will have a lot of configuration objects for both input and output. Changing the path for all of these objects may not be efficient. Instead of having two configuration objects (`pokeGradesRepository` and `pokeGradesRepositoryProd`) like in the last section, you can simply declare one configuration object, and make it reusable.
+
+`local.conf`:
+```
+setl.config.spark {
+  some.config.option = "some-value"
+}
+
+root {
+  path = "src/main/resources"
+}
+
+include "smartConf.conf" // /!\ important
+``` 
+
+`prod.conf`
+```
+setl.config.spark {
+  spark.hadoop.fs.s3a.endpoint = "http://localhost:9090"
+  spark.hadoop.fs.s3a.access.key = "dummyaccess"
+  spark.hadoop.fs.s3a.secret.key = "dummysecret"
+  spark.hadoop.fs.s3a.path.style.access = "true"
+  spark.driver.bindAddress = "127.0.0.1"
+}
+
+root {
+  path = "s3a://setl-examples"
+}
+
+include "smartConf.conf" // /!\ important
+```
+
+`smartConf.conf`:
+```
+smartPokeGradesRepository {
+  storage = "CSV"
+  path = ${root.path}"/pokeGrades.csv"
+  inferSchema = "true"
+  delimiter = ","
+  header = "true"
+  saveMode = "Overwrite"
+}
+```
+
+If you look at `smartConf.conf`, notice the `path` key: it uses the `root.path` key. `smartConf.conf` is included in both in `local.conf` and `prod.conf`, which are the configuration files to be loaded. In `local.conf`, `root.path` is set to a value corresponding to a local path, and in `prod.conf`, it is set to a value corresponding to a prod path, which is a S3 path in this example. Let's now see how to switch development environment.
+
+Note that in the `Setl` object below, we used the `withDefaultConfigLoader()` method. This means that `application.conf` will be loaded, and it retrieves the `app.environment`. `app.environment` is a VM option. By default, it is set to `local` in the `pom.xml` file. Depending on the `app.environment`, it will load the corresponding configuration file, i.e `<app.environment>.conf`.
+
+`App.scala`:
+```
+val smartSetl: Setl = Setl.builder()
+    .withDefaultConfigLoader()
+    .setSparkMaster("local[*]")
+    .getOrCreate()
+
+smartSetl.setConnector("smartPokeGradesRepository", deliveryId = "smartPokeGradesRepository")
+println(smartSetl.getConnector[Connector]("smartPokeGradesRepository").asInstanceOf[FileConnector].options.getPath)
+```
+
+Now, to see how easy it is to switch development environment with `SETL`, change the VM option `-Dapp.environment` by setting it to `local` or `prod`. If you run `App.scala`, you will see that the path will change according to the environment:
+* `src/main/resources/pokeGrades.csv` if `-Dapp.environment=local`
+* `s3a://setl-examples/pokeGrades.csv` if `-Dapp.environment=prod`
+
+</details>
+
+### 5.3 Summary
+
+<details> <summary></summary>
+
+In summary, you can change your development environment by changing to path of your configuration objects. However, this can be obnoxious especially if you have a lot of input/output storage object. By writing a general configuration file, you simply need adjust the VM option to switch your development environment, and get the corresponding paths of your data.
+
+Remind that `SETL` aims at simplifying the Extract and Load processes so that a Data Scientist can focus on his core job: data transformations. On top of that, it gives structure and allows more modularization of your code!
+
+</details>
 
 
 </details>
