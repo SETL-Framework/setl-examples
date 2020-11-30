@@ -1,0 +1,72 @@
+version: '3.2'
+services:
+  psql:
+    image: "postgres"
+    container_name: "postgres-mock"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  cassandra:
+    image: "cassandra"
+    container_name: "cassandra-mock"
+    ports:
+      - "9042:9042"
+    networks:
+      - network
+    healthcheck:
+        test: ["CMD", "cqlsh", "-u cassandra", "-p cassandra" ,"-e describe keyspaces"]
+        interval: 15s
+        timeout: 10s
+        retries: 10
+
+  dynamodb:
+    image: "amazon/dynamodb-local:1.13.5"
+    container_name: "dynamodb-mock"
+    ports:
+      - "8000:8000"
+    networks:
+      - network
+    command: -jar DynamoDBLocal.jar -sharedDb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 10s
+      timeout: 2s
+      retries: 10
+
+  setup-data:
+    image: "python:3.7-alpine3.11"
+    container_name: "setting-data"
+    environment:
+      - AWS_ACCESS_KEY_ID=dummyaccess
+      - AWS_SECRET_ACCESS_KEY=dummysecret
+      - AWS_DEFAULT_REGION=us-east-1
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=framework_dev
+    networks:
+      - network
+    volumes:
+      - ./scripts:/scripts
+    entrypoint: /bin/sh -c
+    command: >
+      "
+        pip3 install awscli==1.17.9
+        pip3 install cassandra-driver
+        /bin/sh /scripts/dynamodb-init.sh
+        sleep 60
+        python /scripts/cassandra-init.py
+        echo Everything is ready.
+      "
+    depends_on:
+      - psql
+      - cassandra
+      - dynamodb
+
+networks:
+  network:
