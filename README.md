@@ -566,33 +566,106 @@ Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_acce
 
 <details> <summary><strong>Exercises</strong></summary>
 
+In these exercises, we are going to practice registering and ingesting different types of storage: a CSV file, a JSON file, a Parquet file, an Excel file, a table from DynamoDB, a table from Cassandra and a table from PostgreSQL.
+
+An `App.scala` is already prepared. We created a `SETL` entry point and use a configuration file located at `src/main/resources/exercise/extract/extract.conf`. In this file, a configuration object has been created for each storage type, but they are incomplete.
+
+The goal here is to complete the configuration objects with the help of the [documentation](https://setl-developers.github.io/setl/data_access_layer/configuration_example), register the data as `Connector` in a `Pipeline` and print them in a `Factory` after ingestion.
+
+To verify registration and ingestion, we prepared `CheckExtractFactory`. To test your code, complete the `???` parts and uncomment the corresponding lines. 
+
 <details> <summary>a) Ingesting a CSV file</summary>
+
+The goal of this first exercise is to register and ingest a CSV file.
+
+We are looking to read the CSV file located at `src/main/resources/exercise/extract/paris-wi-fi-service.csv`.
+1. Complete the configuration object `csvFile` in `src/main/resources/exercise/extract/extract.conf`.
+2. In `App.scala`, register a `Connector` with this data.
+3. You may create your own `Factory` and implement the `read()` function to verify if you can ingest the data. If you are not sure how yet, we already added a `Factory` to a `Stage`, which is added to the `Pipeline`. This `CheckExtractFactory` will ingest a `Connector` named `csvFileConnector`. It will read in into `csvFile` in the `read()` method, and verify the number of lines in this data. Uncomment the corresponding lines and complete the part on the `@Delivery` annotation before running your code to test your implementation of CSV file registration and ingestion.
 
 </details>
 
 <details> <summary>b) Ingesting a JSON file</summary>
 
+The goal of this second exercise is to register and ingest a JSON file.
+
+We are looking to read the JSON file located at `src/main/resources/exercise/extract/paris-notable-trees.json`.
+1. Complete the configuration object `jsonFile` in `src/main/resources/exercise/extract/extract.conf`.
+2. In `App.scala`, register a `Connector` with this data.
+3. You may create your own `Factory` and implement the `read()` function to verify if you can ingest the data. If you are not sure how to do that yet, we already added a `Factory` to a `Stage`, which is added to the `Pipeline`. This `CheckExtractFactory` will ingest a `Connector` named `jsonFileConnector`. It will read in into `parquetFile` in the `read()` method, and verify the number of lines in this data. Uncomment the corresponding lines and complete the part on the `@Delivery` annotation before running your code to test your implementation of JSON file registration and ingestion.
+
 </details>
 
 <details> <summary>c) Ingesting a Parquet file</summary>
+
+The goal of this third exercise is to register and ingest a Parquet file.
+
+We are looking to read the Parquet file located at `src/main/resources/exercise/extract/paris-public-toilet.parquet`.
+1. Complete the configuration object `parquetFile` in `src/main/resources/exercise/extract/extract.conf`.
+2. In `App.scala`, register a `Connector` with this data.
+3. You may create your own `Factory` and implement the `read()` function to verify if you can ingest the data. If you are not sure how to do that yet, we already added a `Factory` to a `Stage`, which is added to the `Pipeline`. This `CheckExtractFactory` will ingest a `Connector` named `parquetFileConnector`. It will read in into `parquetFile` in the `read()` method, and verify the number of lines in this data. Uncomment the corresponding lines and complete the part on the `@Delivery` annotation before running your code to test your implementation of Parquet file registration and ingestion.
 
 </details>
 
 <details> <summary>d) Ingesting an Excel file</summary>
 
+The goal of this fourth exercise is to register and ingest an Excel file.
+
+We are looking to read the Excel file located at `src/main/resources/exercise/extract/paris-textile-containers.xlsx`.
+1. Complete the configuration object `excelFile` in `src/main/resources/exercise/extract/extract.conf`.
+2. In `App.scala`, register a `Connector` with this data.
+3. You may create your own `Factory` and implement the `read()` function to verify if you can ingest the data. If you are not sure how to do that yet, we already added a `Factory` to a `Stage`, which is added to the `Pipeline`. This `CheckExtractFactory` will ingest a `Connector` named `excelFileConnector`. It will read in into `excelFile` in the `read()` method, and verify the number of lines in this data. Uncomment the corresponding lines and complete the part on the `@Delivery` annotation before running your code to test your implementation of Excel file registration and ingestion.
+
 </details>
 
 <details> <summary>e) Ingesting data from DynamoDB</summary>
 
+The goal of this fifth exercise is to register and ingest data from a table in DynamoDB.
+
+To work on this exercise, we need to host a local [DynamoDB](https://aws.amazon.com/fr/dynamodb/) server. To do that, we prepared a `docker-compose.yml` in the `exercise-environment/` folder. Make sure you have [Docker](https://www.docker.com/) installed. In a terminal, change your directory to `exercise-environment/` and execute `docker-compose up`. It will create a local DynamoDB server at `http://localhost:8000`. It will also create a table `orders_table` in the `us-east-1` region, and populate it with some data.
+
+Make sure you launch the Docker containers before starting this exercise.
+
+We are looking to read the `orders_table` table from DynamoDB, located at the `us-east-1` region.
+1. Complete the configuration object `dynamoDBData` in `src/main/resources/exercise/extract/extract.conf`.
+2. In `App.scala`, register a `Connector` with this data. We already set the endpoint to be `http://localhost:8000` so that the requests are pointing to your local DynamoDB instance.
+3. You may create your own `Factory` and implement the `read()` function to verify if you can ingest the data. If you are not sure how to do that yet, we already added a `Factory` to a `Stage`, which is added to the `Pipeline`. This `CheckExtractFactory` will ingest a `Connector` named `dynamoDBDataConnector`. It will read in into `dynamoDBData` in the `read()` method, and verify the number of lines in this data. Uncomment the corresponding lines and complete the part on the `@Delivery` annotation before running your code to test your implementation of DynamoDB data registration and ingestion.
+
 </details>
 
-<details> <summary>f) Ingesting data from Cassandra file</summary>
+<details> <summary>f) Ingesting data from Cassandra</summary>
+
+The goal of this sixth exercise is to register and ingest data from a table in Cassandra.
+
+To work on this exercise, we need to host a local [Cassandra](https://cassandra.apache.org/) server. To do that, we prepared a `docker-compose.yml` in the `exercise-environment/` folder. Make sure you have [Docker](https://www.docker.com/) installed. In a terminal, change your directory to `exercise-environment/` and execute `docker-compose up`. It will create a local Cassandra server at `http://localhost:9042`. It will also create a keyspace `mykeyspace` and a table `profiles`, and populate it with some data.
+
+Make sure you launch the Docker containers before starting this exercise.
+
+We are looking to read the `profiles` table from Cassandra, located at the `mykeyspace` keyspace.
+1. Complete the configuration object `cassandraDBData` in `src/main/resources/exercise/extract/extract.conf`.
+2. In `App.scala`, register a `Connector` with this data. We already set the endpoint to be `http://localhost:9042` so that the requests are pointing to your local Cassandra instance.
+3. You may create your own `Factory` and implement the `read()` function to verify if you can ingest the data. If you are not sure how to do that yet, we already added a `Factory` to a `Stage`, which is added to the `Pipeline`. This `CheckExtractFactory` will ingest a `Connector` named `cassandraDataConnector`. It will read in into `cassandraData` in the `read()` method, and verify the number of lines in this data. Uncomment the corresponding lines and complete the part on the `@Delivery` annotation before running your code to test your implementation of Cassandra data registration and ingestion.
 
 </details>
 
-<details> <summary>g) Ingesting data from JDBC file</summary>
+<details> <summary>g) Ingesting data from PostgreSQL</summary>
+
+The goal of this seventh exercise is to register and ingest data from a table in PostgreSQL.
+
+To work on this exercise, we need to host a local [PostgreSQL](https://www.postgresql.org/) server. To do that, we prepared a `docker-compose.yml` in the `exercise-environment/` folder. Make sure you have [Docker](https://www.docker.com/) installed. In a terminal, change your directory to `exercise-environment/` and execute `docker-compose up`. It will create a local PostgreSQL server at `http://localhost:5432`. It will also create a database `postgres` and a table `products`, and populate it with some data.
+
+You will also need the PostgreSQL JDBC driver. As specified in the documentation, you must provide a JDBC driver when using JDBC storage type. o provide the PostgreSQL JDBC driver, head to https://jdbc.postgresql.org/download.html, download the driver, and make the JDBC library jar available to the project. If you are using IntelliJ IDEA, right click on the jar and click on `Add as Library`.
+
+Make sure you launch the Docker containers before starting this exercise.
+
+We are looking to read the `products` table from PostgreSQL, located at the `postgres` database.
+1. Complete the configuration object `jdbcDBData` in `src/main/resources/exercise/extract/extract.conf`.
+2. In `App.scala`, register a `Connector` with this data. Remember that the endpoint should be `http://localhost:5432`.
+3. You may create your own `Factory` and implement the `read()` function to verify if you can ingest the data. If you are not sure how to do that yet, we already added a `Factory` to a `Stage`, which is added to the `Pipeline`. This `CheckExtractFactory` will ingest a `Connector` named `jdbcDataConnector`. It will read in into `jdbcData` in the `read()` method, and verify the number of lines in this data. Uncomment the corresponding lines and complete the part on the `@Delivery` annotation before running your code to test your implementation of PostgreSQL data registration and ingestion.
 
 </details>
+
+To challenge yourself, try to replace the different `Connector` with `SparkRepository`. Make use of what you have learned in the *lesson*!
 
 </details>
 

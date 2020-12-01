@@ -8,19 +8,19 @@ import org.apache.spark.sql.DataFrame
 
 class CheckExtractFactory extends Factory[Int] with HasSparkSession {
 
-//  @Delivery(id = "csvFile")
+//  @Delivery(id = "???")
 //  val csvFileConnector: Connector = Connector.empty
-//  @Delivery(id = "jsonFile")
+//  @Delivery(id = "???")
 //  val jsonFileConnector: Connector = Connector.empty
-//  @Delivery(id = "parquetFile")
+//  @Delivery(id = "???")
 //  val parquetFileConnector: Connector = Connector.empty
-//  @Delivery(id = "excelFile")
+//  @Delivery(id = "???")
 //  val excelFileConnector: Connector = Connector.empty
-//  @Delivery(id = "dynamoDBData")
+//  @Delivery(id = "???")
 //  val dynamoDBDataConnector: Connector = Connector.empty
-//  @Delivery(id = "cassandraData")
+//  @Delivery(id = "???")
 //  val cassandraDataConnector: Connector = Connector.empty
-//  @Delivery(id = "jdbcData")
+//  @Delivery(id = "???")
 //  val jdbcDataConnector: Connector = Connector.empty
 
 //  var csvFile: DataFrame = spark.emptyDataFrame
