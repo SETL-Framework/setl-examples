@@ -818,6 +818,18 @@ The classic data transformations happen in the `process()` function of your `Fac
 
 <details> <summary><strong>Exercises</strong></summary>
 
+In this exercise, we are going to practice about how to structure a `SETL` project for transformation processes.
+
+An App.scala is already prepared. We created a SETL entry point and use a configuration file located at `src/main/resources/exercise/transform/transform.conf`. In this file, configuration objects are already created. We will be working with `pokeGrades.csv` and `digiGrades.csv`, both files located at `src/main/resources/`. We are looking to looking to compute the mean score of each "poke" and then of each "digi".
+
+1. We are going to extract the data: `pokeGrades.csv` and `digiGrades.csv`, from `src/main/resources/`. In `App.scala`, register these two as `SparkRepository`.
+2. Next step is to complete the `Factory`. Head over to `MeanGradeFactory` to complete the part about data ingestion.
+3. You should know a `Factory` has 4 core mandatory functions. Leave the `write()` and `get()` functions as they are. Use the `read()` function if necessary. Keep in mind about what `autoLoad` is.
+4. In the `process()` function, we are going to compute the mean grade for `pokeGrades` and `digiGrades` data. To do that, we are going to create a `Transformer`, named `MeanGradeTransformer`. This `Transformer` takes a parameter of type `Dataset[Grade]` and outputs an object of type `DataFrame`. There should be two columns: one column `name` and one column `grade` for the mean grade.
+5. In the `process()` function, we can now call the `Transformer` on each data, apply transformations and store the result in variables.
+6. Lastly, we can merge the two results and verify the final `DataFrame` by printing it.
+
+Follow the instructions in the code to achieve this exercise. If you'd like to challenge yourself, try to write a complete `Pipeline` by yourself, without the help of the prepared code files. For example, you can try to find the top-3 scores of each "poke" and each "digi".
 
 
 </details>
