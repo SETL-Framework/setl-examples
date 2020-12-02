@@ -4,5 +4,5 @@ import com.jcdecaux.setl.annotation.ColumnName
 
 
 case class Grade(date: String,
-                 @ColumnName("name") pName: String,
-                 grade: Int)
+                 @ColumnName("name") monName: String,
+                 grade: Double)
