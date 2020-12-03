@@ -831,7 +831,6 @@ An App.scala is already prepared. We created a SETL entry point and use a config
 
 Follow the instructions in the code to achieve this exercise. If you'd like to challenge yourself, try to write a complete `Pipeline` by yourself, without the help of the prepared code files. For example, you can try to find the top-3 scores of each "poke" and each "digi".
 
-
 </details>
 
 ## 4. Load
@@ -1144,7 +1143,20 @@ Note: Although it is possible to retrieve the output of a `Factory` in another o
 
 <details> <summary><strong>Exercises</strong></summary>
 
+In this exercise, we are going to practice about how to the Load processes with SETL, that is, how to pass the result of a `Factory` to another `Factory`, and how to write the result of a `Factory`.
 
+An App.scala is already prepared. We created a SETL entry point and use a configuration file located at `src/main/resources/exercise/load/load.conf`. In this file, configuration objects are already created. We will be working with `pokeGrades.csv` and `digiGrades.csv`, both files located at `src/main/resources/`. We are going to find out how many exams there are per year. To do that, a first `Factory` will "compute" all the dates from the data, and pass this result to the second `Factory`. This second `Factory` ingest the result, extract the year of each date and count the number of exams per year.
+
+1. We are going to extract the data: `pokeGrades.csv` and `digiGrades.csv`, from `src/main/resources/`. In `App.scala`, register these two as `SparkRepository`. Also register a `Connector` where to write your output. Remind that a configuration file have been provided.
+2. Next step is to complete the two `Factory`. Head over to `GetExamsDateFactory` first.
+3. Complete the part on the data ingestion by setting the `Delivery`. In `GetExamsDateFactory`, the goal is to get the different exam dates of `pokeGrades.csv` and `digiGrades.csv`. Use the `read()` function if necessary. In the `process()` function, concatenate both the "poke" and the "digi" data. Then, only keep the `date` column, as it is the only relevant column in this exercise. Leave the `write()` function as is, and complete the `get()` function by returning the result of your process.
+4. Now, head over to `ExamStatsFactory`. This `Factory` will ingest the result of `GetExamsDateFactory`. As usual, the first step is to add the `Delivery`. Remember that to write an output, you also have to add a `Connector` or `SparkRepository` for the output, as it can define the storage type and the path. Also remember about `producer`. Go over to the lesson if you forgot about it.
+5. Use the `read()` function if necessary. In the `process()` function, we are looking to compute the number of exams per year. Our input data is a `DataFrame` of 1 single column `date`. Replace the `date` column by extracting the year only: it is the first 4 characters of the `date` column. Then, count the number of `date`. Use the `groupBy()`, `agg()` and `count()` functions. In our data, each year is duplicated 10 times. Indeed, for each exam, there are always 10 "poke" or 10 "digi". As a consequence, we need to divide the count by 10.
+6. Use the output Delivery you declared to save the result output in the `write()` function. Complete the `get()` function to return the result, even though it is not used. If you run the code, you should have the number of exams per year, located in `src/main/resources/examsStats/`.
+
+Follow the instructions in the code to achieve this exercise. If you'd like to challenge yourself, try to write a complete `Pipeline` by yourself, without the help of the prepared code files. For example, you can try to save in a file the list of "poke" and "digi".
+
+Note that these exercises are simply used to practise `SETL` and their structure may very well not be optimized for your production workflow. These are just simple illustrations of what you can usually do with the framework. 
 
 </details>
 
@@ -1286,14 +1298,6 @@ In summary, you can change your development environment by changing to path of y
 Remind that `SETL` aims at simplifying the Extract and Load processes so that a Data Scientist can focus on his core job: data transformations. On top of that, it gives structure and allows more modularization of your code!
 
 </details>
-
-
-</details>
-
-##
-
-<details> <summary><strong>Exercises</strong></summary>
-
 
 
 </details>

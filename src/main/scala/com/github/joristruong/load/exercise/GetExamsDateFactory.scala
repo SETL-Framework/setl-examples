@@ -32,6 +32,8 @@ class GetExamsDateFactory extends Factory[DataFrame] with HasSparkSession {
    * 2.2 In the `process()` function, we are going to concatenate both the "poke" and the "digi" data.
    * Then, we will only keep the `date` column, as it is the only relevant column in this exercise.
    * As a reminder, we are looking to compute the number of exams per year.
+   *
+   * Hint: you can use the `coalesce()` function.
    */
   override def process(): GetExamsDateFactory.this.type = {
     examDates = ???
