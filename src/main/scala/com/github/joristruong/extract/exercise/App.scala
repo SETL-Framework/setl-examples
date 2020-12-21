@@ -85,6 +85,17 @@ object App {
     //setl.setConnector(???)
 
     /**
+     * Ingest data from Delta.
+     * The provided Delta table is located at `src/main/resources/extract/delta-table`.
+     * It has two versions: version 0 and version 1.
+     * You will set two configuration objects and two `Connector`, one for version 0 and one for version 1,
+     * so that you can see the changes.
+     * Please complete the appropriate configuration objects and the `setConnector()` method.
+     */
+    //setl.setConnector(???)
+    //setl.setConnector(???)
+    
+    /**
      * Create your own `Factory` or use the predefined one to check that the data has been correctly ingested
      */
     setl

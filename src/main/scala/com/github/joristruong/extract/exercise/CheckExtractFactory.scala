@@ -22,6 +22,10 @@ class CheckExtractFactory extends Factory[Int] with HasSparkSession {
 //  val cassandraDataConnector: Connector = Connector.empty
 //  @Delivery(id = "???")
 //  val jdbcDataConnector: Connector = Connector.empty
+//  @Delivery(id = ???)
+//  val deltaDataVersionZeroConnector: Connector = Connector.empty
+//  @Delivery(id = ???)
+//  val deltaDataVersionOneConnector: Connector = Connector.empty
 
 //  var csvFile: DataFrame = spark.emptyDataFrame
 //  var jsonFile: DataFrame = spark.emptyDataFrame
@@ -30,6 +34,8 @@ class CheckExtractFactory extends Factory[Int] with HasSparkSession {
 //  var dynamoDBData: DataFrame = spark.emptyDataFrame
 //  var cassandraData: DataFrame = spark.emptyDataFrame
 //  var jdbcData: DataFrame = spark.emptyDataFrame
+//  var deltaDataVersionZero: DataFrame = spark.emptyDataFrame
+//  var deltaDataVersionOne: DataFrame = spark.emptyDataFrame
 
   override def read(): CheckExtractFactory.this.type = {
 //    csvFile = csvFileConnector.read()
@@ -39,6 +45,8 @@ class CheckExtractFactory extends Factory[Int] with HasSparkSession {
 //    dynamoDBData = dynamoDBDataConnector.read()
 //    cassandraData = cassandraDataConnector.read()
 //    jdbcData = jdbcDataConnector.read()
+//    deltaDataVersionZero = deltaDataVersionZeroConnector.read()
+//    deltaDataVersionOne = deltaDataVersionOneConnector.read()
 
 //    assert(csvFile.count == 264)
 //    assert(jsonFile.count == 179)
@@ -47,6 +55,8 @@ class CheckExtractFactory extends Factory[Int] with HasSparkSession {
 //    assert(dynamoDBData.count == 5)
 //    assert(cassandraData.count == 5)
 //    assert(jdbcData.count == 3)
+//    assert(deltaDataVersionZero.count == 5)
+//    assert(deltaDataVersionOne.count == 5)
 
     this
   }
