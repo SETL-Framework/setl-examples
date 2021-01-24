@@ -1,6 +1,6 @@
 # SETL examples
 
-Lessons and exercises to get familiar with the wonderful [SETL](https://github.com/SETL-Developers/setl) framework!
+Lessons and exercises to get familiar with the wonderful [SETL](https://github.com/SETL-Framework/setl) framework!
 
 # Chapters
 
@@ -69,7 +69,7 @@ You can also set your own `ConfigLoader`. In the code below, `Setl` will load `l
 >     .getOrCreate()
 > ```
  
-You can also set your own `SparkSession` which will be used by `Setl`, with the `setSparkSession()` method. Please refer to the documentation or the source code of [SETL](https://github.com/SETL-Developers/setl).
+You can also set your own `SparkSession` which will be used by `Setl`, with the `setSparkSession()` method. Please refer to the [documentation](https://setl-framework.github.io/setl/) or the source code of [SETL](https://github.com/SETL-Framework/setl).
 
 </details>
 
@@ -135,7 +135,7 @@ Nothing too crazy: try to build your own `Setl` object! Run your code and examin
 SETL supports two types of data accessors: Connector and SparkRepository.
 * A Connector is a non-typed abstraction of data access layer (DAL). For simplicity, you can understand it to as a Spark DataFrame.
 * A SparkRepository is a typed abstraction data access layer (DAL). For simplicity, you can understand it as a Spark Dataset.
-For more information, please refer to the [official documentation](https://setl-developers.github.io/setl/).
+For more information, please refer to the [official documentation](https://setl-framework.github.io/setl/).
 
 `SETL` supports multiple data format, such as CSV, JSON, Parquet, Excel, Cassandra, DynamoDB, JDBC or Delta.
 
@@ -423,7 +423,7 @@ override def read(): IngestionFactory.this.type = {
 The `read()` function is typically where you will do your data preprocessing. Usually, we will simply assign values to our variables. Occasionally, this is typically where you would want to do some filtering on your data.
 
 * To retrieve the `DataFrame` of a `Connector`, use the `read()` method.
-* To retrieve the `Dataset` of a `SparkRepository`, you can use the `findAll()` method, or the `findBy()` method. The latter allows you to do filtering based on `Condition`. More info [here](https://setl-developers.github.io/setl/Condition).
+* To retrieve the `Dataset` of a `SparkRepository`, you can use the `findAll()` method, or the `findBy()` method. The latter allows you to do filtering based on `Condition`. More info [here](https://setl-framework.github.io/setl/Condition).
 
 The registered data is then correctly ingested. It is now ready to be used during the `process()` function.
 
@@ -558,7 +558,7 @@ In summary, the *extraction* part of an ETL process translates to the following 
 
 ### 2.7 Data format configuration cheat sheet
 
-Cheat sheet can be found [here](https://setl-developers.github.io/setl/data_access_layer/configuration_example).
+Cheat sheet can be found [here](https://setl-framework.github.io/setl/data_access_layer/configuration_example).
 
 </details>
 
@@ -570,7 +570,7 @@ In these exercises, we are going to practice registering and ingesting different
 
 An `App.scala` is already prepared. We created a `SETL` entry point and use a configuration file located at `src/main/resources/exercise/extract/extract.conf`. In this file, a configuration object has been created for each storage type, but they are incomplete.
 
-The goal here is to complete the configuration objects with the help of the [documentation](https://setl-developers.github.io/setl/data_access_layer/configuration_example), register the data as `Connector` in a `Pipeline` and print them in a `Factory` after ingestion.
+The goal here is to complete the configuration objects with the help of the [documentation](https://setl-framework.github.io/setl/data_access_layer/configuration_example), register the data as `Connector` in a `Pipeline` and print them in a `Factory` after ingestion.
 
 To verify registration and ingestion, we prepared `CheckExtractFactory`. To test your code, complete the `???` parts and uncomment the corresponding lines. 
 
